@@ -1,0 +1,21 @@
+language: python
+cache: pip
+python:
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
+- '3.6'
+install: pip install . pylint pytest pytest-cov
+script:
+- py.test --cov dip --cov-report term-missing
+- pylint dip
+after_success: codecov
+deploy:
+  provider: pypi
+  user: amancevice
+  password:
+    secure: lUHL5gJDroW5cGoA2DNwt4/LfJuHIKsTgtnsQo0m7hsBFPo1gIOifd+BMfhFRYOve+FatuNrw3pwWfvPAwupV7cJGzluSFYiqTjf6pG/Zk0G1wXpDQleiGIK6IxxjJ02jPOlRL4ZNuxnlLfFrN/AqjdVK3a3pjjXeHdHIoMonx/iNdwCKdnBe6gjyYKl4YdAQk82rsnVLVOzaLbSHqRSq88+culdtupVHIxN0RJdwlJ+hiRwKMF2sq84mnaRrwnW1eNQA/UUhnRsQUANmVxZtit9apnMsd4dRenL5ryrNMKmTWzJOR8KtbXeGaAevN00/AgJWQ40QiEKXHiXbn23zxOXHqstV4wsMKMsIXz7s1XxS8zfvckNbuYU4R/tKuNijLsDxggpC2yev5bbfghhFkaHPGXmUe3obNdMUdZ6EZoiCPfn3G+pDcehAkT6GkZvPxooUx3+jhJZ60vURw30OKIewa4ARWODxu85VFTQO/hxpQqaise2yJhU24YUrEAcGIxRM6mXa0DjCprVG+CFFoq+jA1hJIC6lYK4YaICESBio/NdPsPT+srPNnxX+f8Yq2gFYqmekUQ9VwnnFcKipFmGLfXTwNpEbyFCpMf3hwEwtBxX47o0tu0PnMLcWFWfhNn/F6ZP98A2sGAc4wmNe6OLlUNV71OznQLZQUSKw9U=
+  on:
+    tags: true
+    repo: amancevice/dip
