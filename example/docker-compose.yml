@@ -1,0 +1,9 @@
+version: '2'
+services:
+  redis:
+    image: redis:alpine
+  dipex:
+    image: dipex
+    build: .
+    depends_on:
+      - redis
