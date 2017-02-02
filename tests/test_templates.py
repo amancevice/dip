@@ -18,5 +18,5 @@ def test_config():
     ret = templates.config()
     exp = json.dumps({
         'path': '/usr/local/bin',
-        'dips': []}, sort_keys=True, indent=4)
+        'dips': {}}, sort_keys=True, indent=4)+'\n'
     assert ret == exp

@@ -14,6 +14,10 @@ Install CLIs using docker-compose
 pip install dip
 ```
 
+## Configuration
+
+The default configuration
+
 ## Usage
 
 Use `dip` to install a CLI using a `docker-compose.yml` file.

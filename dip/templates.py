@@ -19,5 +19,5 @@ def cli(name, home):
 
 def config():
     """ dip config template. """
-    cfg = {'path': '/usr/local/bin', 'dips': []}
-    return json.dumps(cfg, sort_keys=True, indent=4)
+    cfg = {'path': '/usr/local/bin', 'dips': {}}
+    return json.dumps(cfg, sort_keys=True, indent=4)+'\n'
