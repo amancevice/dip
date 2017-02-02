@@ -6,7 +6,7 @@ python:
 - '3.4'
 - '3.5'
 - '3.6'
-install: pip install . pylint pytest pytest-cov
+install: pip install . codecov pylint pytest pytest-cov
 script:
 - py.test --cov dip --cov-report term-missing
 - pylint dip
