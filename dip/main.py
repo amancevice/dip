@@ -14,7 +14,10 @@ CONFIG = dipconfig.read()
 
 @click.group()
 def dip():
-    """ Entrypoint. """
+    """ Install CLIs using docker-compose.
+
+        See https://github.com/amancevice/dip for details & instructions.
+    """
     pass  # pragma: no cover
 
 
@@ -30,11 +33,10 @@ def show():
     click.echo(json.dumps(CONFIG, sort_keys=True, indent=4))
 
 
-@click.command()
+@click.command(name='set')
 @click.argument('name')
 @click.argument('value')
-# pylint: disable=redefined-builtin
-def set(name, value):
+def setcmd(name, value):
     """ Set config value. """
     CONFIG[name] = value
     dipconfig.write_config(CONFIG)
@@ -114,5 +116,5 @@ dip.add_command(config)
 dip.add_command(install)
 dip.add_command(uninstall)
 config.add_command(show)
-config.add_command(set)
+config.add_command(setcmd)
 config.add_command(reset)

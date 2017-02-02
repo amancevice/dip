@@ -113,7 +113,7 @@ def test_reset(mock_reset):
 @mock.patch('dip.config.write_config')
 def test_set(mock_write):
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.set, ['fizz', 'buzz'])
+    result = runner.invoke(main.setcmd, ['fizz', 'buzz'])
     exp = config.default()
     exp['fizz'] = 'buzz'
     assert result.exit_code == 0
