@@ -1,14 +1,23 @@
 """
 Templates for executables.
 """
-BASH = '''#!/bin/bash
-
-set -e
-cd {pwd}
-docker-compose run --rm {exe} $*
-'''
+import json
+import os
+import pkg_resources as pkg
 
 
-def bash(exe, pwd):
-    """ Format bash executable script. """
-    return BASH.format(exe=exe, pwd=pwd)
+def cli(name, home):
+    """ CLI executable script template. """
+    # Get path to dip cli
+    template = os.path.join('dip', 'templates', 'cli.sh')
+    filename = pkg.resource_filename(pkg.Requirement.parse('dip'), template)
+
+    # Return CLI template body
+    with open(filename, 'r') as bash:
+        return bash.read().format(name=name, home=home)
+
+
+def config():
+    """ dip config template. """
+    cfg = {'path': '/usr/local/bin', 'dips': []}
+    return json.dumps(cfg, sort_keys=True, indent=4)

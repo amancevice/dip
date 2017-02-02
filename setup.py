@@ -16,7 +16,8 @@ setup(
     author='amancevice',
     author_email='smallweirdnum@gmail.com',
     packages=['dip'],
-    url="http://www.smallweirdnumber.com",
+    package_data={'dip': ['templates/*']},
+    url='http://www.smallweirdnumber.com',
     description='Install CLIs using docker-compose',
     long_description=textwrap.dedent(
         '''See GitHub_ for documentation.
@@ -33,7 +34,5 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python'],
-    install_requires=[
-        'click>=6.7',
-        'docker-compose>=1.10.0'],
+    install_requires=['click>=6.7'],
     entry_points={'console_scripts': ['dip=dip.main:dip']})

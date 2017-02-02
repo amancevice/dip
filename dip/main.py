@@ -4,8 +4,10 @@ dip CLI tool main entrypoint
 import os
 
 import click
-# from compose.cli import main as docker_compose
-from . import templates
+from . import cli
+from . import config
+
+CONFIG = config.read()
 
 
 @click.group()
@@ -16,51 +18,49 @@ def dip():
 
 @click.command()
 @click.argument('name')
-@click.argument('path', default='.')
-@click.option('--exe', default='/usr/local/bin',
-              help='Path to write executable')
+@click.argument('home', default='.')
+@click.option('--path', default=CONFIG['path'],
+              help="Path to write executable [default: {}]"
+              .format(CONFIG['path']))
 @click.option('--dry-run/--no-dry-run', default=False,
               help='Do not write executable')
-def install(name, path, exe, dry_run):
-    """ Install CLI. """
-    # Move to install directory
-    os.chdir(path)
-    pwd = os.getcwd()
+def install(name, home, path, dry_run):
+    """ Install CLI using PATH to docker-compose.yml
+
+        \b
+        dip install fizz               # Default is current dir
+        dip install fizz .             # Explicit path
+        dip install fizz /path/to/dir  # Absolute path
+    """
+    # Get abspath for home
+    home = os.path.abspath(home)
 
     # Get path to write executable
-    path = os.path.join(exe, name)
-
-    # Get body of executable
-    bash = templates.bash(name, pwd)
+    exe = os.path.join(path, name)
 
     # Write executable
     if dry_run is False:
-        with open(path, 'w') as executable:
-            executable.write(bash)
-        os.chmod(path, 0o755)
-
-    # Dry run
-    else:
-        click.echo(bash)
+        cli.write_cli(exe, name, home)
 
     # Finish
-    click.echo("Installed {name} to {path}".format(name=name, path=path))
+    click.echo("Installed {name} to {exe}".format(name=name, exe=exe))
 
 
 @click.command()
 @click.argument('name')
-@click.option('--exe', default='/usr/local/bin',
-              help='Path to write executable')
-def uninstall(name, exe):
-    """ Uninstall CLI. """
+@click.option('--path', default='/usr/local/bin',
+              help="Path to write executable [default: {}]"
+              .format(CONFIG['path']))
+def uninstall(name, path):
+    """ Uninstall CLI by name. """
     # Get path to delete executable
-    path = os.path.join(exe, name)
+    exe = os.path.join(path, name)
 
-    # Remove file
-    os.remove(path)
+    # Remove executable
+    cli.remove_cli(exe)
 
     # Finish
-    click.echo("Uninstalled {name} from {path}".format(name=name, path=path))
+    click.echo("Uninstalled {name} from {exe}".format(name=name, exe=exe))
 
 
 dip.add_command(install)
