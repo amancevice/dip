@@ -3,7 +3,7 @@
 [![build](https://travis-ci.org/amancevice/dip.svg?branch=master)](https://travis-ci.org/amancevice/dip)
 [![codecov](https://codecov.io/gh/amancevice/dip/branch/master/graph/badge.svg)](https://codecov.io/gh/amancevice/dip)
 [![pypi](https://badge.fury.io/py/dip.svg)](https://badge.fury.io/py/dip)
-[![python](https://img.shields.io/badge/python-2.7--3.5-blue.svg)](https://img.shields.io/badge/python-2.7--3.5-blue.svg)
+[![python](https://img.shields.io/badge/python-2.7--3.6-blue.svg)](https://img.shields.io/badge/python-2.7--3.6-blue.svg)
 
 
 Install CLIs using docker-compose
@@ -16,7 +16,51 @@ pip install dip
 
 ## Configuration
 
-The default configuration
+The default configuration can be viewed using the `dip config show` command:
+
+```json
+{
+    "path": "/usr/local/bin",
+    "dips": {}
+}
+```
+
+The default `PATH` for installations can be changed:
+
+```bash
+$ dip config set path /path/to/bin
+{
+    "path": "/path/to/bin",
+    "dips": {}
+}
+```
+
+After an item is installed it will appear in the `dips` key:
+
+```bash
+$ dip install dipex /path/to/docker-compose-dir
+$ dip config show
+{
+    "path": "/path/to/bin",
+    "dips": {
+        "dipex": "/path/to/bin/dipex"
+    }
+}
+```
+
+Alternatively, use the `--path` option when installing/uninstalling to use a custom path for a given item.
+
+```bash
+$ dip install --path /my/bin dipex /path/to/docker-compose-dir
+$ dip config show
+{
+    "path": "/path/to/bin",
+    "dips": {
+        "dipex": "/my/bin/dipex"
+    }
+}
+```
+
 
 ## Usage
 
@@ -37,7 +81,7 @@ services:
 Install the CLI using the `dip install` command, supplying the name of the service and the path to the `docker-compose.yml` file (defaults to the current directory):
 
 ```bash
-dip install fizz /path/to/docker-compose.yml
+dip install fizz /path/to/docker-compose-dir
 ```
 
 ## Example
