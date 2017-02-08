@@ -72,6 +72,9 @@ Use `dip home NAME` to find the home directory of the installed CLI:
 ```bash
 $ dip home dipex
 /path/to/docker-compose-dir
+
+# Handy trick...
+$ cd $(dip home dipex)
 ```
 
 Use `dip show NAME` to print the contents of the `docker-compose.yml` to screen:
