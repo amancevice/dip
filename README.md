@@ -16,7 +16,7 @@ pip install dip
 
 ## Configuration
 
-The default configuration can be viewed using the `dip config show` command:
+The default configuration can be viewed using the `dip config` command:
 
 ```json
 {
@@ -28,7 +28,7 @@ The default configuration can be viewed using the `dip config show` command:
 The default `PATH` for installations can be changed:
 
 ```bash
-$ dip config set path /path/to/bin
+$ dip config path /path/to/bin
 {
     "path": "/path/to/bin",
     "dips": {}
@@ -39,26 +39,49 @@ After an item is installed it will appear in the `dips` key:
 
 ```bash
 $ dip install dipex /path/to/docker-compose-dir
-$ dip config show
+$ dip config
 {
     "path": "/path/to/bin",
     "dips": {
-        "dipex": "/path/to/bin/dipex"
+        "dipex": {
+            "home": "/path/to/docker-compose-dir",
+            "path": "/path/to/bin"
+        }
     }
 }
 ```
 
-Alternatively, use the `--path` option when installing/uninstalling to use a custom path for a given item.
+Use the `--path` option when installing/uninstalling to override the default path & use a custom one:
 
 ```bash
 $ dip install --path /my/bin dipex /path/to/docker-compose-dir
-$ dip config show
+$ dip config
 {
     "path": "/path/to/bin",
     "dips": {
-        "dipex": "/my/bin/dipex"
+        "dipex": {
+            "home": "/path/to/docker-compose-dir",
+            "path": "/my/bin"
+        }
     }
 }
+```
+
+Use `dip home NAME` to find the home directory of the installed CLI:
+
+```bash
+$ dip home dipex
+/path/to/docker-compose-dir
+```
+
+Use `dip show NAME` to print the contents of the `docker-compose.yml` to screen:
+
+```bash
+$ dip show dipex
+version: '2'
+services:
+  dipex:
+    # ...
 ```
 
 

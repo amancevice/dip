@@ -3,13 +3,12 @@ dip CLI tool main entrypoint
 """
 import json
 import os
-import sys
 
 import click
 from . import cli
-from . import config as dipconfig
-
-CONFIG = dipconfig.read()
+from . import config as dipcfg
+from . import exc
+from . import options
 
 
 @click.group()
@@ -21,45 +20,64 @@ def dip():
     pass  # pragma: no cover
 
 
-@click.group()
-def config():
+@click.command(name='help')
+@click.pass_context
+def help_(ctx):
+    """ Show this message. """
+    cmd = globals()[ctx.parent.command.name]
+    click.echo(cmd.get_help(ctx.parent))
+
+
+@click.command(name='home')
+@options.NAME
+def home_(name):
+    """ Display home dir of installed CLI. """
+    try:
+        click.echo(dipcfg.read()['dips'][name]['home'])
+    except KeyError:
+        raise exc.CliNotInstalled(name)
+
+
+@click.command()
+@options.NAME
+def show(name):
+    """ Show contents of docker-compose.yml. """
+    try:
+        path = dipcfg.read()['dips'][name]['home']
+        path = os.path.join(path, 'docker-compose.yml')
+        with open(path, 'r') as compose:
+            click.echo(compose.read())
+    except KeyError:
+        raise exc.CliNotInstalled(name)
+    except IOError:
+        raise exc.DockerComposeError(name)
+
+
+@click.group(chain=True, invoke_without_command=True)
+@click.pass_context
+def config(ctx):
     """ Show/set/reset dip config. """
-    pass  # pragma: no cover
+    if ctx.invoked_subcommand is None:
+        click.echo(json.dumps(dipcfg.read(), sort_keys=True, indent=4))
+
+
+@click.command(name='path')
+@options.PATH
+def path_(path):
+    """ Set default PATH. """
+    cfg = dipcfg.read()
+    cfg['path'] = path
+    dipcfg.write_config(cfg)
+    click.echo(json.dumps(cfg, sort_keys=True, indent=4))
 
 
 @click.command()
-def show():
-    """ Show dip config JSON. """
-    click.echo(json.dumps(CONFIG, sort_keys=True, indent=4))
-
-
-@click.command(name='set')
-@click.argument('name')
-@click.argument('value')
-def setcmd(name, value):
-    """ Set config value. """
-    CONFIG[name] = value
-    dipconfig.write_config(CONFIG)
-    click.echo(json.dumps(CONFIG, sort_keys=True, indent=4))
-
-
-@click.command()
-def reset():
-    """ Reset config to defaults. """
-    globals()['CONFIG'] = dipconfig.reset()
-    click.echo(json.dumps(CONFIG, sort_keys=True, indent=4))
-
-
-@click.command()
-@click.argument('name')
-@click.argument('home', default='.')
-@click.option('--path', default=CONFIG['path'],
-              help="Path to write executable [default: {}]"
-              .format(CONFIG['path']))
-@click.option('--dry-run/--no-dry-run', default=False,
-              help='Do not write executable')
+@options.NAME
+@options.HOME
+@options.PATH_OPT
+@options.DRY_RUN
 def install(name, home, path, dry_run):
-    """ Install CLI using PATH to docker-compose.yml
+    """ Install CLI by name.
 
         \b
         dip install fizz               # Default is current dir
@@ -77,44 +95,40 @@ def install(name, home, path, dry_run):
         cli.write_cli(exe, name, home)
 
     # Update config
-    CONFIG['dips'][name] = home
-    dipconfig.write_config(CONFIG)
+    options.CONFIG['dips'][name] = {'path': path, 'home': home}
+    dipcfg.write_config(options.CONFIG)
 
     # Finish
     click.echo("Installed {name} to {exe}".format(name=name, exe=exe))
 
 
 @click.command()
-@click.argument('name')
-@click.option('--path', default='/usr/local/bin',
-              help="Path to write executable [default: {}]"
-              .format(CONFIG['path']))
-def uninstall(name, path):
+@options.NAME
+def uninstall(name):
     """ Uninstall CLI by name. """
-    # Get path to delete executable
-    exe = os.path.join(path, name)
+    # Get CLI config
+    cfg = dipcfg.read()['dips']
 
     # Remove executable
     try:
-        cli.remove_cli(exe)
-    except OSError:
-        click.echo("'{name}' is not installed.".format(name=name))
-        sys.exit(1)
+        exe = cfg[name]['path']
+        cli.remove_cli(os.path.join(exe, name))
+    except (KeyError, OSError):
+        raise exc.CliNotInstalled(name)
 
     # Update config
-    try:
-        del CONFIG['dips'][name]
-        dipconfig.write_config(CONFIG)
-    except KeyError:
-        pass
+    del cfg[name]
+    dipcfg.write_config(cfg)
 
     # Finish
     click.echo("Uninstalled {name} from {exe}".format(name=name, exe=exe))
 
 
 dip.add_command(config)
+dip.add_command(help_)
 dip.add_command(install)
+dip.add_command(home_)
+dip.add_command(show)
 dip.add_command(uninstall)
-config.add_command(show)
-config.add_command(setcmd)
-config.add_command(reset)
+config.add_command(help_)
+config.add_command(path_)

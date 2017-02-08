@@ -20,15 +20,6 @@ def config_path():
                                  'dip/config.json')
 
 
-def write_config(config=None, path=None):
-    """ Write default config to path. """
-    filename = path or config_path()
-    config = config or default()
-    body = json.dumps(config, sort_keys=True, indent=4)
-    with open(filename, 'w') as cfg:
-        cfg.write(body)
-
-
 def read(path=None):
     """ Get dip config dict. """
     filename = path or config_path()
@@ -48,3 +39,12 @@ def reset(path=None):
     if os.path.exists(filename):
         os.remove(filename)
     return default()
+
+
+def write_config(config=None, path=None):
+    """ Write default config to path. """
+    filename = path or config_path()
+    config = config or default()
+    body = json.dumps(config, sort_keys=True, indent=4)
+    with open(filename, 'w') as cfg:
+        cfg.write(body)
