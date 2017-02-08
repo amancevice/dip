@@ -56,7 +56,7 @@ def show(name):
 @click.group(chain=True, invoke_without_command=True)
 @click.pass_context
 def config(ctx):
-    """ Show/set/reset dip config. """
+    """ Show current dip configuration. """
     if ctx.invoked_subcommand is None:
         click.echo(json.dumps(dipcfg.read(), sort_keys=True, indent=4))
 
