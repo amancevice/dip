@@ -7,3 +7,5 @@ services:
     build: .
     depends_on:
       - redis
+    environment:
+      REDIS_HOST: redis
