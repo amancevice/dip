@@ -1,3 +1,4 @@
+import contextlib
 import json
 import pkg_resources as pkg
 import tempfile
@@ -5,21 +6,80 @@ import tempfile
 import mock
 import pytest
 from dip import config
-from dip import templates
+from dip import exc
 
 
-def test_default():
-    ret = config.default()
-    exp = json.loads(templates.config())
-    assert ret == exp
-
-
-@mock.patch('os.remove')
-def test_reset(mock_rm):
-    cfg = {'dips': {}, 'path': '/fizz/buzz'}
+@contextlib.contextmanager
+def tmpconfig(cfg):
     with tempfile.NamedTemporaryFile() as tmp:
-        config.reset(tmp.name)
-        mock_rm.assert_called_once_with(tmp.name)
+        tmp.write(json.dumps(cfg, sort_keys=True, indent=4).encode('utf-8'))
+        tmp.flush()
+        yield tmp
+
+
+def test_current():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        with config.current(tmp.name) as ret:
+            assert ret == exp
+
+
+def test_config_for():
+    exp = {
+        'dips': {'test': {'home': '/tmp', 'path': '/bin'}},
+        'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        with config.config_for('test', tmp.name) as ret:
+            assert ret == exp['dips']['test']
+
+
+def test_config_for_err():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        with pytest.raises(exc.CliNotInstalled):
+            with config.config_for('test') as ret:
+                pass
+
+
+def test_install():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        config.install('test', '/home', '/path', tmp.name)
+        tmp.flush()
+        with config.current(tmp.name) as ret:
+            exp['dips']['test'] = {'home': '/home', 'path': '/path'}
+            assert ret == exp
+
+
+def test_set_path():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        config.set_path('/path', tmp.name)
+        tmp.flush()
+        with config.current(tmp.name) as ret:
+            exp['path'] = '/path'
+            assert ret == exp
+
+
+def test_uninstall():
+    exp = {
+        'dips': {'test': {'home': '/home', 'path': '/path'}},
+        'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        config.uninstall('test', tmp.name)
+        tmp.flush()
+        with config.current(tmp.name) as ret:
+            del exp['dips']['test']
+            assert ret == exp
+
+
+def test_uninstall_err():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        config.uninstall('test', tmp.name)
+        tmp.flush()
+        with config.current(tmp.name) as ret:
+            assert ret == exp
 
 
 @mock.patch('pkg_resources.resource_filename')
@@ -29,10 +89,10 @@ def test_config_path(mock_filename):
     mock_filename.assert_called_once_with(package, 'dip/config.json')
 
 
-def test_write_config():
+def test_write():
     cfg = {'dips': {}, 'path': '/fizz/buzz'}
     with tempfile.NamedTemporaryFile() as tmp:
-        config.write_config(cfg, tmp.name)
+        config.write(cfg, tmp.name)
         tmp.flush()
 
         ret = tmp.read()
@@ -40,9 +100,14 @@ def test_write_config():
         assert ret == exp
 
 
+def test_write_err():
+    with pytest.raises(exc.DipConfigError):
+        config.write({'path': '/path', 'dips': {}}, '/dip')
+
+
 def test_read_default():
     ret = config.read()
-    exp = json.loads(templates.config())
+    exp = config.DEFAULT
     assert ret == exp
 
 

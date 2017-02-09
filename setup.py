@@ -16,7 +16,6 @@ setup(
     author='amancevice',
     author_email='smallweirdnum@gmail.com',
     packages=['dip'],
-    package_data={'dip': ['templates/*']},
     url='http://www.smallweirdnumber.com',
     description='Install CLIs using docker-compose',
     long_description=textwrap.dedent(

@@ -6,7 +6,6 @@ import click.testing
 import mock
 from dip import config
 from dip import main
-from dip import templates
 
 
 def test_dip():
@@ -24,9 +23,9 @@ def test_help():
 
 def test_config_help():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config, ['help'])
+    result = runner.invoke(main.config_, ['help'])
     assert result.exit_code == 0
-    assert result.output == runner.invoke(main.config, ['--help']).output
+    assert result.output == runner.invoke(main.config_, ['--help']).output
 
 
 @mock.patch('dip.config.read')
@@ -48,7 +47,7 @@ def test_home_err(mock_cfg):
     runner = click.testing.CliRunner()
     result = runner.invoke(main.home_, ['buzz'])
     assert result.exit_code == 1
-    assert result.output == "Error: 'buzz' is not installed.\n"
+    assert result.output == "Error: 'buzz' is not installed\n"
 
 
 @mock.patch('dip.config.read')
@@ -77,7 +76,7 @@ def test_show_ioerr(mock_cfg):
     result = runner.invoke(main.show, ['fizz'])
     assert result.exit_code == 1
     assert result.output == "Error: No docker-compose.yml definition found "\
-                            "for 'fizz' command.\n"
+                            "for 'fizz' command\n"
 
 
 @mock.patch('dip.config.read')
@@ -88,27 +87,27 @@ def test_show_keyerr(mock_cfg):
     runner = click.testing.CliRunner()
     result = runner.invoke(main.show, ['buzz'])
     assert result.exit_code == 1
-    assert result.output == "Error: 'buzz' is not installed.\n"
+    assert result.output == "Error: 'buzz' is not installed\n"
 
 
-@mock.patch('dip.cli.write_cli')
-@mock.patch('dip.config.write_config')
+@mock.patch('dip.cli.write')
+@mock.patch('dip.config.write')
 def test_install(mock_cfg, mock_write):
     name = 'fizz'
     with tempfile.NamedTemporaryFile() as tmppath:
         with tempfile.NamedTemporaryFile() as tmphome:
             path, pathname = os.path.split(tmppath.name)
             home, homename = os.path.split(tmphome.name)
-            exe = os.path.join(path, name)
             runner = click.testing.CliRunner()
             result = runner.invoke(main.install, ['--path', path, name, home])
             assert result.exit_code == 0
-            assert result.output == "Installed fizz to {exe}\n".format(exe=exe)
-            mock_write.assert_called_once_with(exe, name, home)
+            assert result.output == "Installed 'fizz' to {path}\n"\
+                                    .format(path=path)
+            mock_write.assert_called_once_with(name, home, path)
 
 
-@mock.patch('dip.cli.remove_cli')
-@mock.patch('dip.config.write_config')
+@mock.patch('dip.cli.remove')
+@mock.patch('dip.config.write')
 @mock.patch('dip.config.read')
 def test_uninstall(mock_cfg, mock_write, mock_remove):
     with tempfile.NamedTemporaryFile() as tmp:
@@ -119,58 +118,58 @@ def test_uninstall(mock_cfg, mock_write, mock_remove):
                 'fizz': {
                     'home': '/path/to/fizz',
                     'path': path}}}
-        exe = os.path.join(path, 'fizz')
         runner = click.testing.CliRunner()
         result = runner.invoke(main.uninstall, ['fizz'])
         assert result.exit_code == 0
-        mock_remove.assert_called_once_with(exe)
+        mock_remove.assert_called_once_with('fizz', path)
 
 
-@mock.patch('dip.cli.remove_cli')
-@mock.patch('dip.config.write_config')
-@mock.patch('dip.config.read')
-def test_uninstall_oserr(mock_cfg, mock_write, mock_remove):
+@mock.patch('os.remove')
+def test_uninstall_err(mock_remove):
     mock_remove.side_effect = OSError
-    with tempfile.NamedTemporaryFile() as tmp:
-        path, tmpname = os.path.split(tmp.name)
-        mock_cfg.return_value = {
-            'path': path,
-            'dips': {
-                'fizz': {
-                    'home': '/path/to/fizz',
-                    'path': path}}}
-        exe = os.path.join(path, 'fizz')
-        runner = click.testing.CliRunner()
-        result = runner.invoke(main.uninstall, ['fizz'])
-        assert result.exit_code == 1
-
-
-@mock.patch('dip.cli.remove_cli')
-@mock.patch('dip.config.write_config')
-@mock.patch('dip.config.read')
-def test_uninstall_keyerr(mock_cfg, mock_write, mock_remove):
-    with tempfile.NamedTemporaryFile() as tmp:
-        path, tmpname = os.path.split(tmp.name)
-        mock_cfg.return_value = {'path': path, 'dips': {}}
-        exe = os.path.join(path, 'fizz')
-        runner = click.testing.CliRunner()
-        result = runner.invoke(main.uninstall, ['fizz'])
-        assert result.exit_code == 1
-        mock_remove.assert_not_called()
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.uninstall, ['fizz'])
+    assert result.exit_code == 1
 
 
 def test_config():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config)
+    result = runner.invoke(main.config_)
     assert result.exit_code == 0
-    assert result.output == templates.config()
+    assert result.output == json.dumps(config.DEFAULT,
+                                       sort_keys=True,
+                                       indent=4)+'\n'
 
 
-@mock.patch('dip.config.write_config')
+@mock.patch('dip.config.write')
 def test_path(mock_write):
     runner = click.testing.CliRunner()
     result = runner.invoke(main.path_, ['/path/to/bin'])
-    exp = config.default()
+    exp = config.DEFAULT
     exp['path'] = '/path/to/bin'
     assert result.exit_code == 0
-    assert result.output == json.dumps(exp, sort_keys=True, indent=4)+'\n'
+    assert result.output == "Default path set to '/path/to/bin'\n"
+
+
+@mock.patch('dip.config.read')
+@mock.patch('os.chdir')
+@mock.patch('os.execv')
+def test_pull(mock_exe, mock_chd, mock_cfg):
+    mock_cfg.return_value = {'dips': {'test': {'home': '/home'}}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.pull, ['test'])
+    mock_chd.assert_called_once_with('/home')
+    mock_exe.assert_called_once_with('/usr/local/bin/docker-compose',
+                                     ['docker-compose', 'pull', 'test'])
+
+
+@mock.patch('dip.config.read')
+@mock.patch('os.chdir')
+@mock.patch('os.execv')
+def test_pull_err(mock_exe, mock_chd, mock_cfg):
+    mock_cfg.return_value = {'dips': {'test': {'home': '/home'}}}
+    mock_exe.side_effect = OSError
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.pull, ['test'])
+    mock_chd.assert_called_once_with('/home')
+    assert result.output == "Error: Unable to pull updates for 'test'\n"

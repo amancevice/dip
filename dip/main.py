@@ -6,7 +6,7 @@ import os
 
 import click
 from . import cli
-from . import config as dipcfg
+from . import config
 from . import exc
 from . import options
 
@@ -24,51 +24,52 @@ def dip():
 @click.pass_context
 def help_(ctx):
     """ Show this message. """
-    cmd = globals()[ctx.parent.command.name]
-    click.echo(cmd.get_help(ctx.parent))
+    click.echo(ctx.parent.command.get_help(ctx.parent))
 
 
 @click.command(name='home')
 @options.NAME
 def home_(name):
     """ Display home dir of installed CLI. """
-    try:
-        click.echo(dipcfg.read()['dips'][name]['home'])
-    except KeyError:
-        raise exc.CliNotInstalled(name)
+    with config.config_for(name) as cfg:
+        click.echo(cfg['home'])
 
 
 @click.command()
 @options.NAME
 def show(name):
     """ Show contents of docker-compose.yml. """
-    try:
-        path = dipcfg.read()['dips'][name]['home']
-        path = os.path.join(path, 'docker-compose.yml')
-        with open(path, 'r') as compose:
-            click.echo(compose.read())
-    except KeyError:
-        raise exc.CliNotInstalled(name)
-    except IOError:
-        raise exc.DockerComposeError(name)
+    with config.config_for(name) as cfg:
+        # Get path to docker-compose.yml
+        path = os.path.join(cfg['home'], 'docker-compose.yml')
+
+        # Echo contents of docker-compose.yml
+        try:
+            with open(path, 'r') as compose:
+                click.echo(compose.read())
+        except (OSError, IOError):
+            raise exc.DockerComposeError(name)
 
 
-@click.group(chain=True, invoke_without_command=True)
+@click.group('config', chain=True, invoke_without_command=True)
 @click.pass_context
-def config(ctx):
+def config_(ctx):
     """ Show current dip configuration. """
+    # Echo config if no subcommand
     if ctx.invoked_subcommand is None:
-        click.echo(json.dumps(dipcfg.read(), sort_keys=True, indent=4))
+        with config.current() as cfg:
+            click.echo(json.dumps(cfg, sort_keys=True, indent=4))
 
 
 @click.command(name='path')
 @options.PATH
 def path_(path):
     """ Set default PATH. """
-    cfg = dipcfg.read()
-    cfg['path'] = path
-    dipcfg.write_config(cfg)
-    click.echo(json.dumps(cfg, sort_keys=True, indent=4))
+    # Update config
+    config.set_path(path)
+
+    # Finish
+    click.echo("Default path set to '{path}'".format(path=path))
 
 
 @click.command()
@@ -84,51 +85,58 @@ def install(name, home, path, dry_run):
         dip install fizz .             # Explicit path
         dip install fizz /path/to/dir  # Absolute path
     """
-    # Get abspath for home
-    home = os.path.abspath(home)
-
-    # Get path to write executable
-    exe = os.path.join(path, name)
-
     # Write executable
     if dry_run is False:
-        cli.write_cli(exe, name, home)
+        cli.write(name, os.path.abspath(home), path)
 
     # Update config
-    options.CONFIG['dips'][name] = {'path': path, 'home': home}
-    dipcfg.write_config(options.CONFIG)
+    config.install(name, home, path)
 
     # Finish
-    click.echo("Installed {name} to {exe}".format(name=name, exe=exe))
+    click.echo("Installed '{name}' to {path}".format(name=name, path=path))
+
+
+@click.command()
+@options.NAME
+@options.SERVICE
+def pull(name, service):
+    """ Pull updates from docker-compose. """
+    # Get services to pull
+    service = service or (name,)
+    service = list(service)
+
+    # Get CLI config
+    with config.config_for(name) as cfg:
+        try:
+            os.chdir(cfg['home'])
+            os.execv('/usr/local/bin/docker-compose',
+                     ['docker-compose', 'pull']+service)
+        except (OSError, IOError):
+            raise exc.DipError("Unable to pull updates for '{name}'"
+                               .format(name=name))
 
 
 @click.command()
 @options.NAME
 def uninstall(name):
     """ Uninstall CLI by name. """
-    # Get CLI config
-    cfg = dipcfg.read()['dips']
+    with config.config_for(name) as cfg:
+        # Remove executable
+        cli.remove(name, cfg['path'])
 
-    # Remove executable
-    try:
-        exe = cfg[name]['path']
-        cli.remove_cli(os.path.join(exe, name))
-    except (KeyError, OSError):
-        raise exc.CliNotInstalled(name)
+        # Update config
+        config.uninstall(name)
 
-    # Update config
-    del cfg[name]
-    dipcfg.write_config(cfg)
-
-    # Finish
-    click.echo("Uninstalled {name} from {exe}".format(name=name, exe=exe))
+        # Finish
+        click.echo("Uninstalled '{name}'".format(name=name))
 
 
-dip.add_command(config)
+dip.add_command(config_)
 dip.add_command(help_)
 dip.add_command(install)
 dip.add_command(home_)
+dip.add_command(pull)
 dip.add_command(show)
 dip.add_command(uninstall)
-config.add_command(help_)
-config.add_command(path_)
+config_.add_command(help_)
+config_.add_command(path_)
