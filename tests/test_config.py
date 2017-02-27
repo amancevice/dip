@@ -44,10 +44,24 @@ def test_config_for_err():
 def test_install():
     exp = {'dips': {}, 'path': '/fizz/buzz'}
     with tmpconfig(exp) as tmp:
-        config.install('test', '/home', '/path', tmp.name)
+        config.install('test', '/home', '/path', None, tmp.name)
         tmp.flush()
         with config.current(tmp.name) as ret:
             exp['dips']['test'] = {'home': '/home', 'path': '/path'}
+            assert ret == exp
+
+
+def test_install_remote():
+    exp = {'dips': {}, 'path': '/fizz/buzz'}
+    with tmpconfig(exp) as tmp:
+        config.install('test', '/home', '/path', 'origin', tmp.name)
+        tmp.flush()
+        with config.current(tmp.name) as ret:
+            exp['dips']['test'] = {
+                'home': '/home',
+                'path': '/path',
+                'remote': 'origin'
+            }
             assert ret == exp
 
 

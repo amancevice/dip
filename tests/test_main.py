@@ -72,9 +72,27 @@ def test_install(mock_cfg, mock_write):
             runner = click.testing.CliRunner()
             result = runner.invoke(main.install, ['--path', path, name, home])
             assert result.exit_code == 0
-            assert result.output == "Installed 'fizz' to {path}\n"\
+            assert result.output == "Installed fizz to {path}\n"\
                                     .format(path=path)
-            mock_write.assert_called_once_with(name, home, path)
+            mock_write.assert_called_once_with(name, path)
+
+
+@mock.patch('dip.cli.write')
+@mock.patch('dip.config.write')
+def test_install_remote(mock_cfg, mock_write):
+    name = 'fizz'
+    with tempfile.NamedTemporaryFile() as tmppath:
+        with tempfile.NamedTemporaryFile() as tmphome:
+            path, pathname = os.path.split(tmppath.name)
+            home, homename = os.path.split(tmphome.name)
+            runner = click.testing.CliRunner()
+            result = runner.invoke(
+                main.install,
+                ['--path', path, '--remote', 'origin', name, home])
+            assert result.exit_code == 0
+            assert result.output == "Installed fizz to {path}\n"\
+                                    .format(path=path)
+            mock_write.assert_called_once_with(name, path)
 
 
 @mock.patch('dip.cli.remove')

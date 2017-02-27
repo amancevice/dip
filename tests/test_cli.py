@@ -8,20 +8,30 @@ from dip import exc
 
 
 def test_write():
-    home = '/path/to/docker-compose/'
     with tempfile.NamedTemporaryFile() as tmp:
         path, name = os.path.split(tmp.name)
-        cli.write(name, home, path)
+        cli.write(name, path)
         tmp.flush()
 
         ret = tmp.read()
-        exp = cli.TEMPLATE.format(name=name, home=home).encode('utf-8')
+        exp = cli.template(name).encode('utf-8')
+        assert ret == exp
+
+
+def test_write_remote():
+    with tempfile.NamedTemporaryFile() as tmp:
+        path, name = os.path.split(tmp.name)
+        cli.write(name, path)
+        tmp.flush()
+
+        ret = tmp.read()
+        exp = cli.template(name).encode('utf-8')
         assert ret == exp
 
 
 def test_write_err():
     with pytest.raises(exc.DipOSError):
-        cli.write('fizz', '/buzz', '/dip')
+        cli.write('fizz', '/dip')
 
 
 @mock.patch('os.remove')

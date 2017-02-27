@@ -37,5 +37,6 @@ PATH_OPT = click.option('-p', '--path', default=CONFIG['path'], type=Path(),
                         help="Path to write executable [default: {}]"
                         .format(CONFIG['path']))
 SET = click.option('-s', '--set', help='Set configuration option')
+REMOTE = click.option('-r', '--remote', help='Optional git remote name')
 DRY_RUN = click.option('--dry-run', is_flag=True,
                        help='Do not write executable')

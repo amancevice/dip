@@ -8,6 +8,7 @@ import sys
 from copy import deepcopy
 
 import click
+from termcolor import colored
 from . import cli
 from . import config
 from . import exc
@@ -78,7 +79,8 @@ def config_(keys, **kwargs):
 @options.HOME
 @options.PATH_OPT
 @options.DRY_RUN
-def install(name, home, path, dry_run):
+@options.REMOTE
+def install(name, home, path, dry_run, remote):
     """ Install CLI by name.
 
         \b
@@ -88,13 +90,15 @@ def install(name, home, path, dry_run):
     """
     # Write executable
     if dry_run is False:
-        cli.write(name, os.path.abspath(home), path)
+        cli.write(name, path)
 
     # Update config
-    config.install(name, home, path)
+    config.install(name, home, path, remote)
 
     # Finish
-    click.echo("Installed '{name}' to {path}".format(name=name, path=path))
+    msg = "Installed {name} to {path}"
+    click.echo(msg.format(name=colored(name, 'green'),
+                          path=colored(path, 'yellow')))
 
 
 @click.command()
@@ -129,7 +133,7 @@ def uninstall(name):
         config.uninstall(name)
 
         # Finish
-        click.echo("Uninstalled '{name}'".format(name=name))
+        click.echo("Uninstalled {name}".format(name=colored(name, 'red')))
 
 
 dip.add_command(config_)

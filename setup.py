@@ -16,6 +16,7 @@ setup(
     author='amancevice',
     author_email='smallweirdnum@gmail.com',
     packages=['dip'],
+    package_data={'dip': ['template.sh']},
     url='http://www.smallweirdnumber.com',
     description='Install CLIs using docker-compose',
     long_description=textwrap.dedent(
@@ -35,5 +36,6 @@ setup(
         'Programming Language :: Python'],
     install_requires=[
         'click>=6.7.0',
-        'easysettings>=2.1.0'],
+        'easysettings>=2.1.0',
+        'termcolor>=1.1.0'],
     entry_points={'console_scripts': ['dip=dip.main:dip']})

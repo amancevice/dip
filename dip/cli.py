@@ -2,27 +2,28 @@
 Helper for file IO.
 """
 import os
+import pkg_resources as pkg
 
 from . import exc
 
-TEMPLATE = '''#!/bin/bash
 
-set -e
-cd {home}
-docker-compose run --rm {name} $*
-'''
+def template(name):
+    """ Read the CLI template script. """
+    path = pkg.resource_filename(pkg.Requirement.parse('dip'),
+                                 'dip/template.sh')
+    with open(path, 'r') as temp:
+        return temp.read().replace('%%name%%', name)
 
 
-def write(name, home, path):
+def write(name, path):
     """ Create a CLI.
 
         Arguments:
-            name (str):  Name of executable (ex. fizz)
-            home (str):  Path to docker-compose.yml
-            path (str):  Path for writing executable (ex. /usr/local/bin)
+            name   (str):  Name of executable (ex. fizz)
+            path   (str):  Path for writing executable (ex. /usr/local/bin)
     """
     # Get body of executable
-    body = TEMPLATE.format(home=home, name=name)
+    body = template(name)
 
     # Get full path to executable
     fullpath = os.path.join(path, name)
