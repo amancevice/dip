@@ -51,25 +51,21 @@ def show(name):
             raise exc.DockerComposeError(name)
 
 
-@click.group('config', chain=True, invoke_without_command=True)
-@click.pass_context
-def config_(ctx):
+@click.command('config')
+@options.GLOBAL
+@options.SET
+@options.KEYS
+def config_(keys, **kwargs):
     """ Show current dip configuration. """
-    # Echo config if no subcommand
-    if ctx.invoked_subcommand is None:
-        with config.current() as cfg:
-            click.echo(json.dumps(cfg, sort_keys=True, indent=4))
+    gbl = kwargs['global']
+    s_t = kwargs['set']
+    with config.current() as cfg:
+        if gbl is not True:
+            keys = ('dips',) + keys
+        for key in keys:
+            try:
 
-
-@click.command(name='path')
-@options.PATH
-def path_(path):
-    """ Set default PATH. """
-    # Update config
-    config.set_path(path)
-
-    # Finish
-    click.echo("Default path set to '{path}'".format(path=path))
+        click.echo(keys)
 
 
 @click.command()
@@ -110,7 +106,7 @@ def pull(name, service):
         try:
             os.chdir(cfg['home'])
             os.execv('/usr/local/bin/docker-compose',
-                     ['docker-compose', 'pull']+service)
+                     ['docker-compose', 'pull'] + service)
         except (OSError, IOError):
             raise exc.DipError("Unable to pull updates for '{name}'"
                                .format(name=name))
@@ -138,5 +134,3 @@ dip.add_command(home_)
 dip.add_command(pull)
 dip.add_command(show)
 dip.add_command(uninstall)
-config_.add_command(help_)
-config_.add_command(path_)
