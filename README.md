@@ -30,6 +30,8 @@ pip install dip
 5. Run `dip install <service> --remote origin` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote
 5. Run `dip uninstall <service>` to remove the executable from the file system
 
+If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
+
 ### Why Docker?
 
 When building a custom application it is sometimes necessary to include libraries and packages.
