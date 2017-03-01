@@ -157,11 +157,14 @@ The default configuration can be viewed using the `dip config` command:
 The default `PATH` for installations can be changed:
 
 ```bash
-$ dip config path /path/to/bin
-{
-    "path": "/path/to/bin",
-    "dips": {}
-}
+$ dip config --global path
+/usr/local/bin
+```
+
+```bash
+$ dip config --global path --set /path/to/bin
+$ dip config --global path
+/path/to/bin
 ```
 
 After an item is installed it will appear in the `dips` key:
@@ -196,14 +199,24 @@ $ dip config
 }
 ```
 
-Use `dip home NAME` to find the home directory of the installed CLI:
+Use `dip config NAME` to display the configuration of an installed CLI:
 
 ```bash
-$ dip home dipex
+$ dip config dipex
+{
+    "home": "/path/to/docker-compose-dir",
+    "path": "/my/bin"
+}
+```
+
+Use `dip config NAME KEY` to display a given configuration item
+
+```bash
+$ dip config dipex home
 /path/to/docker-compose-dir
 
 # Handy trick...
-$ cd $(dip home dipex)
+$ cd $(dip config dipex home)
 ```
 
 Use `dip show NAME` to print the contents of the `docker-compose.yml` to screen:

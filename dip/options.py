@@ -2,7 +2,7 @@
 Define options for dip commands.
 """
 import click
-from . import config as dipcfg
+from . import config
 
 
 class Key(click.types.StringParamType):
@@ -25,7 +25,7 @@ class Service(click.types.StringParamType):
     NAME = 'SERVICE'
 
 
-CONFIG = dipcfg.read()
+CONFIG = config.read()
 KEYS = click.argument('keys', nargs=-1)
 NAME = click.argument('name', type=Name())
 PATH = click.argument('path', type=Path())

@@ -82,13 +82,6 @@ def test_uninstall_err():
             assert ret == exp
 
 
-@mock.patch('pkg_resources.resource_filename')
-def test_config_path(mock_filename):
-    package = pkg.Requirement.parse('dip')
-    config.config_path()
-    mock_filename.assert_called_once_with(package, 'dip/config.json')
-
-
 def test_write():
     cfg = {'dips': {}, 'path': '/fizz/buzz'}
     with tempfile.NamedTemporaryFile() as tmp:
@@ -106,9 +99,10 @@ def test_write_err():
 
 
 def test_read_default():
-    ret = config.read()
-    exp = config.DEFAULT
-    assert ret == exp
+    with tempfile.NamedTemporaryFile() as tmp:
+        ret = config.read(tmp.name)
+        exp = config.DEFAULT
+        assert ret == exp
 
 
 def test_read():
@@ -119,3 +113,15 @@ def test_read():
 
         ret = config.read(tmp.name)
         assert ret == cfg
+
+
+@mock.patch('easysettings.JSONSettings.from_file')
+def test_read_oserr(mock_json):
+    mock_json.side_effect = OSError
+    with tempfile.NamedTemporaryFile() as tmp:
+        config.read(tmp.name)
+        tmp.flush()
+
+        ret = config.read(tmp.name)
+        exp = config.DEFAULT
+        assert ret == exp

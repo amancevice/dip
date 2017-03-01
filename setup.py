@@ -33,5 +33,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python'],
-    install_requires=['click>=6.7'],
+    install_requires=[
+        'click>=6.7.0',
+        'easysettings>=2.1.0'],
     entry_points={'console_scripts': ['dip=dip.main:dip']})

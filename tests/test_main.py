@@ -21,35 +21,6 @@ def test_help():
     assert result.output == runner.invoke(main.dip, ['--help']).output
 
 
-def test_config_help():
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['help'])
-    assert result.exit_code == 0
-    assert result.output == runner.invoke(main.config_, ['--help']).output
-
-
-@mock.patch('dip.config.read')
-def test_home(mock_cfg):
-    mock_cfg.return_value = {
-        'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
-        'path': '/usr/local/bin'}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.home_, ['fizz'])
-    assert result.exit_code == 0
-    assert result.output == '/path/to/fizz\n'
-
-
-@mock.patch('dip.config.read')
-def test_home_err(mock_cfg):
-    mock_cfg.return_value = {
-        'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
-        'path': '/usr/local/bin'}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.home_, ['buzz'])
-    assert result.exit_code == 1
-    assert result.output == "Error: 'buzz' is not installed\n"
-
-
 @mock.patch('dip.config.read')
 def test_show(mock_cfg):
     with tempfile.NamedTemporaryFile() as tmp:
@@ -64,7 +35,7 @@ def test_show(mock_cfg):
         runner = click.testing.CliRunner()
         result = runner.invoke(main.show, ['fizz'])
         assert result.exit_code == 0
-        assert result.output == contents+"\n"
+        assert result.output == contents + "\n"
 
 
 @mock.patch('dip.config.read')
@@ -132,23 +103,65 @@ def test_uninstall_err(mock_remove):
     assert result.exit_code == 1
 
 
-def test_config():
+@mock.patch('dip.config.read')
+def test_config(mock_read):
+    mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
     result = runner.invoke(main.config_)
     assert result.exit_code == 0
     assert result.output == json.dumps(config.DEFAULT,
                                        sort_keys=True,
-                                       indent=4)+'\n'
+                                       indent=4) + '\n'
 
 
-@mock.patch('dip.config.write')
-def test_path(mock_write):
+@mock.patch('dip.config.read')
+def test_config_global(mock_read):
+    mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.path_, ['/path/to/bin'])
-    exp = config.DEFAULT
-    exp['path'] = '/path/to/bin'
+    result = runner.invoke(main.config_, ['--global'])
     assert result.exit_code == 0
-    assert result.output == "Default path set to '/path/to/bin'\n"
+    assert result.output == json.dumps(config.DEFAULT,
+                                       sort_keys=True,
+                                       indent=4) + '\n'
+
+
+def test_config_global_path():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['--global', 'path'])
+    assert result.exit_code == 0
+    assert result.output == '/usr/local/bin\n'
+
+
+@mock.patch('dip.config.read')
+def test_config_dip(mock_read):
+    mock_read.return_value = {
+        'path': '/path',
+        'dips': {
+            'dipex': {'home': '/home'}}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['dipex', 'home'])
+    assert result.exit_code == 0
+    assert result.output == '/home\n'
+
+
+@mock.patch('dip.config.read')
+@mock.patch('dip.config.write')
+def test_config_set(mock_write, mock_read):
+    mock_read.return_value = {'path': '/path', 'dips': {}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_,
+                           ['--global', 'path', '--set', '/fizz'])
+    assert result.exit_code == 0
+    mock_write.assert_called_once_with({'path': u'/fizz', 'dips': {}})
+
+
+@mock.patch('dip.config.read')
+def test_config_no_key(mock_read):
+    mock_read.return_value = {'path': '/path', 'dips': {}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['dipex'])
+    assert result.exit_code == 1
+    assert result.output == ''
 
 
 @mock.patch('dip.config.read')
@@ -173,3 +186,29 @@ def test_pull_err(mock_exe, mock_chd, mock_cfg):
     result = runner.invoke(main.pull, ['test'])
     mock_chd.assert_called_once_with('/home')
     assert result.output == "Error: Unable to pull updates for 'test'\n"
+
+
+def test_dict_merge():
+    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
+    dict2 = {'fizz': {'buzz': {'jazz': 'junk', 'riff': 'raff'}}}
+    dict3 = {'buzz': 'fizz'}
+    ret = main.dict_merge(dict1, dict2, dict3)
+    exp = {
+        'fizz': {
+            'buzz': {
+                'jazz': 'junk',
+                'riff': 'raff',
+                'hub': 'bub'
+            }
+        },
+        'buzz': 'fizz'
+    }
+    assert ret == exp
+
+
+def test_dict_merge_nondict():
+    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
+    dict2 = 42
+    ret = main.dict_merge(dict1, dict2)
+    exp = 42
+    assert ret == exp

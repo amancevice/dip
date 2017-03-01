@@ -2,7 +2,10 @@
 dip CLI tool main entrypoint
 """
 import json
+import functools
 import os
+import sys
+from copy import deepcopy
 
 import click
 from . import cli
@@ -25,14 +28,6 @@ def dip():
 def help_(ctx):
     """ Show this message. """
     click.echo(ctx.parent.command.get_help(ctx.parent))
-
-
-@click.command(name='home')
-@options.NAME
-def home_(name):
-    """ Display home dir of installed CLI. """
-    with config.config_for(name) as cfg:
-        click.echo(cfg['home'])
 
 
 @click.command()
@@ -60,12 +55,22 @@ def config_(keys, **kwargs):
     gbl = kwargs['global']
     s_t = kwargs['set']
     with config.current() as cfg:
-        if gbl is not True:
-            keys = ('dips',) + keys
-        for key in keys:
-            try:
-
-        click.echo(keys)
+        if gbl is not True and any(keys):
+            keys = (u'dips',) + keys
+        if s_t is not None:
+            upd = functools.reduce(lambda x, y: {y: x}, reversed(keys), s_t)
+            new_cfg = dict_merge(cfg, upd)
+            config.write(new_cfg)
+        else:
+            for key in keys:
+                try:
+                    cfg = cfg[key]
+                except KeyError:
+                    sys.exit(1)
+            if isinstance(cfg, dict):
+                click.echo(json.dumps(cfg, sort_keys=True, indent=4))
+            else:
+                click.echo(cfg)
 
 
 @click.command()
@@ -130,7 +135,26 @@ def uninstall(name):
 dip.add_command(config_)
 dip.add_command(help_)
 dip.add_command(install)
-dip.add_command(home_)
 dip.add_command(pull)
 dip.add_command(show)
 dip.add_command(uninstall)
+
+
+def dict_merge(target, *args):
+    """ Taken from: http://blog.impressiver.com/post/31434674390 """
+    # Merge multiple dicts
+    if len(args) > 1:
+        for obj in args:
+            dict_merge(target, obj)
+        return target
+
+    # Recursively merge dicts and set non-dict values
+    obj = args[0]
+    if not isinstance(obj, dict):
+        return obj
+    for key, val in obj.items():
+        if key in target and isinstance(target[key], dict):
+            dict_merge(target[key], val)
+        else:
+            target[key] = deepcopy(val)
+    return target

@@ -5,8 +5,10 @@ import contextlib
 import json
 import pkg_resources as pkg
 
+import easysettings
 from . import exc
 
+PATH = pkg.resource_filename(pkg.Requirement.parse('dip'), 'dip/config.json')
 DEFAULT = {'path': '/usr/local/bin', 'dips': {}}
 
 
@@ -26,13 +28,6 @@ def config_for(name, path=None):
             raise exc.CliNotInstalled(name)
 
 
-def config_path():
-    """ Get default path to dip config. """
-    # Get path to dip config template
-    return pkg.resource_filename(pkg.Requirement.parse('dip'),
-                                 'dip/config.json')
-
-
 def install(name, home, path, cfgpath=None):
     """ Add dip config to global config. """
     with current(cfgpath) as cfg:
@@ -42,14 +37,16 @@ def install(name, home, path, cfgpath=None):
 
 def read(path=None):
     """ Get dip config dict. """
-    # Read config.json as dict
+    path = path or PATH
+    # Read config.json
     try:
-        with open(path or config_path(), 'r') as cfg:
-            return json.loads(cfg.read())
-
-    # Return default config if no config written
-    except (OSError, IOError):
-        return DEFAULT
+        cfg = easysettings.JSONSettings.from_file(path)
+    # Write default if none exists or is bad JSON
+    except (OSError, IOError, ValueError):
+        cfg = easysettings.JSONSettings()
+        cfg.update(DEFAULT)
+        cfg.save(path)
+    return dict(cfg)
 
 
 def set_path(new_path, path=None):
@@ -71,11 +68,11 @@ def uninstall(name, path=None):
 
 def write(config=None, path=None):
     """ Write default config to path. """
-    filename = path or config_path()
+    path = path or PATH
     config = config or DEFAULT
     body = json.dumps(config, sort_keys=True, indent=4)
     try:
-        with open(filename, 'w') as cfg:
+        with open(path, 'w') as cfg:
             cfg.write(body)
     except (OSError, IOError):
-        raise exc.DipConfigError(filename)
+        raise exc.DipConfigError(path)
