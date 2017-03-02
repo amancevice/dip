@@ -32,7 +32,7 @@ branch_exists() {
 }
 
 gitdiff() {
-  git diff $1/$2:$(remotepath)/docker-compose.yml ${PWD}/docker-compose.yml
+  git --no-pager diff $1/$2:$(remotepath)/docker-compose.yml ${PWD}/docker-compose.yml
 }
 
 check_remote() {
