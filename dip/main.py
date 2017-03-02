@@ -8,15 +8,17 @@ import sys
 from copy import deepcopy
 
 import click
-from termcolor import colored
+import colored
 from . import cli
 from . import config
 from . import exc
 from . import options
 
 
+# pylint: disable=unused-argument
 @click.group()
-def dip():
+@options.VERSION
+def dip(version):
     """ Install CLIs using docker-compose.
 
         See https://github.com/amancevice/dip for details & instructions.
@@ -24,14 +26,14 @@ def dip():
     pass  # pragma: no cover
 
 
-@click.command(name='help')
+@dip.command(name='help')
 @click.pass_context
 def help_(ctx):
     """ Show this message. """
     click.echo(ctx.parent.command.get_help(ctx.parent))
 
 
-@click.command()
+@dip.command()
 @options.NAME
 def show(name):
     """ Show contents of docker-compose.yml. """
@@ -47,7 +49,7 @@ def show(name):
             raise exc.DockerComposeError(name)
 
 
-@click.command('config')
+@dip.command('config')
 @options.GLOBAL
 @options.SET
 @options.KEYS
@@ -74,7 +76,7 @@ def config_(keys, **kwargs):
                 click.echo(cfg)
 
 
-@click.command()
+@dip.command()
 @options.NAME
 @options.HOME
 @options.PATH_OPT
@@ -97,11 +99,12 @@ def install(name, home, path, dry_run, remote):
 
     # Finish
     msg = "Installed {name} to {path}"
-    click.echo(msg.format(name=colored(name, 'green'),
-                          path=colored(path, 'yellow')))
+    cname = colored.stylize(name, colored.fg('spring_green_1'))
+    cpath = colored.stylize(path, colored.fg('blue'))
+    click.echo(msg.format(name=cname, path=cpath))
 
 
-@click.command()
+@dip.command()
 @options.NAME
 @options.SERVICE
 def pull(name, service):
@@ -121,7 +124,7 @@ def pull(name, service):
                                .format(name=name))
 
 
-@click.command()
+@dip.command()
 @options.NAME
 def uninstall(name):
     """ Uninstall CLI by name. """
@@ -133,15 +136,8 @@ def uninstall(name):
         config.uninstall(name)
 
         # Finish
-        click.echo("Uninstalled {name}".format(name=colored(name, 'red')))
-
-
-dip.add_command(config_)
-dip.add_command(help_)
-dip.add_command(install)
-dip.add_command(pull)
-dip.add_command(show)
-dip.add_command(uninstall)
+        cname = colored.stylize(name, colored.fg('red'))
+        click.echo("Uninstalled {name}".format(name=cname))
 
 
 def dict_merge(target, *args):

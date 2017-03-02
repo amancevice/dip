@@ -2,7 +2,17 @@
 Define options for dip commands.
 """
 import click
+from . import __version__
 from . import config
+
+
+# pylint: disable=unused-argument
+def print_version(ctx, param, value):
+    """ Print dip version and exit. """
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(__version__)
+    ctx.exit()
 
 
 class Key(click.types.StringParamType):
@@ -40,3 +50,5 @@ SET = click.option('-s', '--set', help='Set configuration option')
 REMOTE = click.option('-r', '--remote', help='Optional git remote name')
 DRY_RUN = click.option('--dry-run', is_flag=True,
                        help='Do not write executable')
+VERSION = click.option('-v', '--version', is_flag=True, is_eager=True,
+                       callback=print_version, help='Print dip version')

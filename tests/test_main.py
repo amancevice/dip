@@ -3,6 +3,7 @@ import os
 import tempfile
 
 import click.testing
+import dip
 import mock
 from dip import config
 from dip import main
@@ -12,6 +13,13 @@ def test_dip():
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip, [])
     assert result.exit_code == 0
+
+
+def test_version():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.dip, ['--version'])
+    assert result.exit_code == 0
+    assert result.output == dip.__version__ + '\n'
 
 
 def test_help():
