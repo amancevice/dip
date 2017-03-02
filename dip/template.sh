@@ -37,33 +37,32 @@ gitdiff() {
 
 check_remote() {
   if isgit; then
-    if [ -n "$1" ]; then
-      if remote_exists $1; then
-        if ! branch_exists $1; then
-          echo -e "${AMBER}The remote branch $1/$2 does not exist${NC}"
-          return 1
-        fi
-      else
-        echo -e "${AMBER}The configured remote $1 does not exist${NC}"
+    if remote_exists $1; then
+      if ! branch_exists $1; then
+        echo -e "${AMBER}The remote branch $1/$2 does not exist${NC}"
         return 1
       fi
+    else
+      echo -e "${AMBER}The configured remote $1 does not exist${NC}"
+      return 1
     fi
   fi
 }
 
-set -e
 cd $(dip config %%name%% home)
 remote=$(dip config %%name%% remote)
 branch=$(gitbranch)
 
 # Check for divergence if git is configured
-if check_remote ${remote} ${branch}; then
-  if [ -n "$(gitdiff ${remote} ${branch})" ]; then
-    echo -e "${AMBER}The local docker-compose.yml has diverged from remote $(dip config %%name%% remote)/$(gitbranch)\\n${NC}"
-    gitdiff ${remote} ${branch}
-    echo
-    echo 'Sleeping for 10s'
-    sleep 10
+if [ -n "${remote}" ]; then
+  if check_remote ${remote} ${branch}; then
+    if [ -n "$(gitdiff ${remote} ${branch})" ]; then
+      echo -e "${AMBER}The local docker-compose.yml has diverged from remote $(dip config %%name%% remote)/$(gitbranch)\\n${NC}"
+      gitdiff ${remote} ${branch}
+      echo
+      echo 'Sleeping for 10s'
+      sleep 10
+    fi
   fi
 fi
 
