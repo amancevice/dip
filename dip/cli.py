@@ -2,8 +2,8 @@
 Helper for file IO.
 """
 import os
-import pkg_resources as pkg
 
+import pkg_resources as pkg
 from . import exc
 
 

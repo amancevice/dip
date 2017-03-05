@@ -2,13 +2,22 @@
 Dip configuration.
 """
 import contextlib
-import pkg_resources as pkg
+import functools
+import sys
+from copy import deepcopy
 
 import easysettings
+import pkg_resources as pkg
+from . import __version__
 from . import exc
 
 PATH = pkg.resource_filename(pkg.Requirement.parse('dip'), 'dip/config.json')
-DEFAULT = {'path': '/usr/local/bin', 'dips': {}}
+DEFAULT = {
+    'dips': {},
+    'home': PATH,
+    'path': '/usr/local/bin',
+    'version': __version__
+}
 
 
 @contextlib.contextmanager
@@ -27,6 +36,26 @@ def config_for(name, path=None):
             raise exc.CliNotInstalled(name)
 
 
+def dict_merge(target, *args):
+    """ Taken from: http://blog.impressiver.com/post/31434674390 """
+    # Merge multiple dicts
+    if len(args) > 1:
+        for obj in args:
+            dict_merge(target, obj)
+        return target
+
+    # Recursively merge dicts and set non-dict values
+    obj = args[0]
+    if not isinstance(obj, dict):
+        return obj
+    for key, val in obj.items():
+        if key in target and isinstance(target[key], dict):
+            dict_merge(target[key], val)
+        else:
+            target[key] = deepcopy(val)
+    return target
+
+
 def install(name, home, path, remote, cfgpath=None):
     """ Add dip config to global config. """
     with current(cfgpath) as cfg:
@@ -42,17 +71,24 @@ def read(path=None):
     path = path or PATH
     # Read config.json
     try:
-        return dict(easysettings.JSONSettings.from_file(path))
+        cfg = dict(easysettings.JSONSettings.from_file(path))
+        return dict_merge(deepcopy(DEFAULT), cfg)
     # Write default if none exists or is bad JSON
     except (OSError, IOError, ValueError):
         return DEFAULT
 
 
-def set_path(new_path, path=None):
-    """ Set global path config. """
-    with current(path) as cfg:
-        cfg['path'] = new_path
-        write(cfg, path)
+def set_config(cfg, keys, value):
+    """ Helper to set a config value.
+
+        Arguments:
+            cfg   (dict):   Current configuration
+            keys  (tuple):  Path to target key
+            value (str):    New value to set
+    """
+    upd = functools.reduce(lambda x, y: {y: x}, reversed(keys), value)
+    new_cfg = dict_merge(cfg, upd)
+    write(new_cfg)
 
 
 def uninstall(name, path=None):
@@ -62,7 +98,7 @@ def uninstall(name, path=None):
             del cfg['dips'][name]
             write(cfg, path)
         except KeyError:
-            pass
+            sys.exit(1)
 
 
 def write(config=None, path=None):

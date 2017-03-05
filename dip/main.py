@@ -2,10 +2,8 @@
 dip CLI tool main entrypoint
 """
 import json
-import functools
 import os
 import sys
-from copy import deepcopy
 
 import click
 import colored
@@ -58,20 +56,23 @@ def config_(keys, **kwargs):
     gbl = kwargs['global']
     s_t = kwargs['set']
     with config.current() as cfg:
+        # Add 'dips' to tuple of keys to drill into if no --global flag
         if gbl is not True and any(keys):
             keys = (u'dips',) + keys
+        # Set a config value if --set is provided
         if s_t is not None:
-            upd = functools.reduce(lambda x, y: {y: x}, reversed(keys), s_t)
-            new_cfg = dict_merge(cfg, upd)
-            config.write(new_cfg)
+            config.set_config(cfg, keys, s_t)
+        # Otherwise, drill into config to fetch requested config
         else:
             for key in keys:
                 try:
                     cfg = cfg[key]
                 except KeyError:
                     sys.exit(1)
+            # Print pretty JSON if result is a dict
             if isinstance(cfg, dict):
                 click.echo(json.dumps(cfg, sort_keys=True, indent=4))
+            # Otherwise, just echo result
             else:
                 click.echo(cfg)
 
@@ -138,23 +139,3 @@ def uninstall(name):
         # Finish
         cname = colored.stylize(name, colored.fg('red'))
         click.echo("Uninstalled {name}".format(name=cname))
-
-
-def dict_merge(target, *args):
-    """ Taken from: http://blog.impressiver.com/post/31434674390 """
-    # Merge multiple dicts
-    if len(args) > 1:
-        for obj in args:
-            dict_merge(target, obj)
-        return target
-
-    # Recursively merge dicts and set non-dict values
-    obj = args[0]
-    if not isinstance(obj, dict):
-        return obj
-    for key, val in obj.items():
-        if key in target and isinstance(target[key], dict):
-            dict_merge(target[key], val)
-        else:
-            target[key] = deepcopy(val)
-    return target

@@ -151,7 +151,9 @@ def test_config_global(mock_read):
                                        indent=4) + '\n'
 
 
-def test_config_global_path():
+@mock.patch('dip.config.read')
+def test_config_global_path(mock_read):
+    mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
     result = runner.invoke(main.config_, ['--global', 'path'])
     assert result.exit_code == 0
@@ -212,29 +214,3 @@ def test_pull_err(mock_exe, mock_chd, mock_cfg):
     result = runner.invoke(main.pull, ['test'])
     mock_chd.assert_called_once_with('/home')
     assert result.output == "Error: Unable to pull updates for 'test'\n"
-
-
-def test_dict_merge():
-    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
-    dict2 = {'fizz': {'buzz': {'jazz': 'junk', 'riff': 'raff'}}}
-    dict3 = {'buzz': 'fizz'}
-    ret = main.dict_merge(dict1, dict2, dict3)
-    exp = {
-        'fizz': {
-            'buzz': {
-                'jazz': 'junk',
-                'riff': 'raff',
-                'hub': 'bub'
-            }
-        },
-        'buzz': 'fizz'
-    }
-    assert ret == exp
-
-
-def test_dict_merge_nondict():
-    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
-    dict2 = 42
-    ret = main.dict_merge(dict1, dict2)
-    exp = 42
-    assert ret == exp

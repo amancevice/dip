@@ -1,7 +1,6 @@
 import contextlib
 import json
 import pkg_resources as pkg
-import tempfile
 
 import mock
 import pytest
@@ -9,102 +8,142 @@ from dip import config
 from dip import exc
 
 
-@contextlib.contextmanager
-def tmpconfig(cfg):
-    with tempfile.NamedTemporaryFile() as tmp:
-        tmp.write(json.dumps(cfg, sort_keys=True, indent=4).encode('utf-8'))
-        tmp.flush()
-        yield tmp
+@mock.patch('dip.config.read')
+def test_current(mock_read):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    with config.current() as ret:
+        assert ret == exp
 
 
-def test_current():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        with config.current(tmp.name) as ret:
-            assert ret == exp
-
-
-def test_config_for():
+@mock.patch('dip.config.read')
+def test_config_for(mock_read):
     exp = {
         'dips': {'test': {'home': '/tmp', 'path': '/bin'}},
-        'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        with config.config_for('test', tmp.name) as ret:
-            assert ret == exp['dips']['test']
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    with config.config_for('test') as ret:
+        assert ret == exp['dips']['test']
 
 
-def test_config_for_err():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        with pytest.raises(exc.CliNotInstalled):
-            with config.config_for('test') as ret:
-                pass
+@mock.patch('dip.config.read')
+def test_config_for_err(mock_read):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    with pytest.raises(exc.CliNotInstalled):
+        with config.config_for('test') as ret:
+            pass
 
 
-def test_install():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        config.install('test', '/home', '/path', None, tmp.name)
-        tmp.flush()
-        with config.current(tmp.name) as ret:
-            exp['dips']['test'] = {'home': '/home', 'path': '/path'}
-            assert ret == exp
+@mock.patch('dip.config.write')
+@mock.patch('dip.config.read')
+def test_install(mock_read, mock_write):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    config.install('test', '/home', '/path', None)
+    mock_write.assert_called_once_with({
+        'dips': {
+            'test': {
+                'home': '/home',
+                'path': '/path'
+            }
+        },
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }, None)
 
 
-def test_install_remote():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        config.install('test', '/home', '/path', 'origin', tmp.name)
-        tmp.flush()
-        with config.current(tmp.name) as ret:
-            exp['dips']['test'] = {
+@mock.patch('dip.config.write')
+@mock.patch('dip.config.read')
+def test_install_remote(mock_read, mock_write):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    config.install('test', '/home', '/path', 'origin')
+    mock_write.assert_called_once_with({
+        'dips': {
+            'test': {
                 'home': '/home',
                 'path': '/path',
                 'remote': 'origin'
             }
-            assert ret == exp
+        },
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }, None)
 
 
-def test_set_path():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        config.set_path('/path', tmp.name)
-        tmp.flush()
-        with config.current(tmp.name) as ret:
-            exp['path'] = '/path'
-            assert ret == exp
-
-
-def test_uninstall():
+@mock.patch('dip.config.write')
+@mock.patch('dip.config.read')
+def test_uninstall(mock_read, mock_write):
     exp = {
         'dips': {'test': {'home': '/home', 'path': '/path'}},
-        'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        config.uninstall('test', tmp.name)
-        tmp.flush()
-        with config.current(tmp.name) as ret:
-            del exp['dips']['test']
-            assert ret == exp
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    config.uninstall('test')
+    mock_write.assert_called_once_with({
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }, None)
 
 
-def test_uninstall_err():
-    exp = {'dips': {}, 'path': '/fizz/buzz'}
-    with tmpconfig(exp) as tmp:
-        config.uninstall('test', tmp.name)
-        tmp.flush()
-        with config.current(tmp.name) as ret:
-            assert ret == exp
+@mock.patch('dip.config.read')
+@mock.patch('sys.exit')
+def test_uninstall_err(mock_exit, mock_read):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    config.uninstall('test')
+    mock_exit.assert_called_once_with(1)
 
 
-def test_write():
-    cfg = {'dips': {}, 'path': '/fizz/buzz'}
-    with tempfile.NamedTemporaryFile() as tmp:
-        config.write(cfg, tmp.name)
-        tmp.flush()
-
-        ret = tmp.read()
-        exp = json.dumps(cfg, sort_keys=True, indent=4).encode('utf-8')
-        assert ret == exp
+@mock.patch('dip.config.read')
+@mock.patch('easysettings.JSONSettings.save')
+@mock.patch('easysettings.JSONSettings.update')
+def test_write(mock_update, mock_save, mock_read):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_read.return_value = exp
+    config.write(exp)
+    mock_update.assert_called_once_with(exp)
+    mock_save.assert_called_once_with(config.PATH, sort_keys=True)
 
 
 def test_write_err():
@@ -112,30 +151,48 @@ def test_write_err():
         config.write({'path': '/path', 'dips': {}}, '/dip')
 
 
-def test_read_default():
-    with tempfile.NamedTemporaryFile() as tmp:
-        ret = config.read(tmp.name)
-        exp = config.DEFAULT
-        assert ret == exp
-
-
-def test_read():
-    cfg = {'dips': {}, 'path': '/fizz/buzz'}
-    with tempfile.NamedTemporaryFile() as tmp:
-        tmp.write(json.dumps(cfg, sort_keys=True, indent=4).encode('utf-8'))
-        tmp.flush()
-
-        ret = config.read(tmp.name)
-        assert ret == cfg
+@mock.patch('easysettings.JSONSettings.from_file')
+def test_read(mock_from_file):
+    exp = {
+        'dips': {},
+        'home': '/home',
+        'path': '/fizz/buzz',
+        'version': '0.0.0'
+    }
+    mock_from_file.return_value = exp
+    ret = config.read()
+    assert ret == exp
 
 
 @mock.patch('easysettings.JSONSettings.from_file')
-def test_read_oserr(mock_json):
-    mock_json.side_effect = OSError
-    with tempfile.NamedTemporaryFile() as tmp:
-        config.read(tmp.name)
-        tmp.flush()
+def test_read_oserr(mock_from_file):
+    mock_from_file.side_effect = OSError
+    ret = config.read()
+    exp = config.DEFAULT
+    assert ret == exp
 
-        ret = config.read(tmp.name)
-        exp = config.DEFAULT
-        assert ret == exp
+
+def test_dict_merge():
+    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
+    dict2 = {'fizz': {'buzz': {'jazz': 'junk', 'riff': 'raff'}}}
+    dict3 = {'buzz': 'fizz'}
+    ret = config.dict_merge(dict1, dict2, dict3)
+    exp = {
+        'fizz': {
+            'buzz': {
+                'jazz': 'junk',
+                'riff': 'raff',
+                'hub': 'bub'
+            }
+        },
+        'buzz': 'fizz'
+    }
+    assert ret == exp
+
+
+def test_dict_merge_nondict():
+    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
+    dict2 = 42
+    ret = config.dict_merge(dict1, dict2)
+    exp = 42
+    assert ret == exp
