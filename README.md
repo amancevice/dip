@@ -126,10 +126,16 @@ Installing the CLI is as simple as:
 dip install dipex
 ```
 
+Or, if you would like to install tracking a remote:
+
+```bash
+dip install dipex --remote origin  # or whatever your remote is aliased
+```
+
 If you are not currently inside the directory where your `docker-compose.yml` file is, you may supply it as a positional argument:
 
 ```bash
-dip install dipex /path/to/docker-compose-dir
+dip install dipex /path/to/docker-compose-dir [--remote origin]
 ```
 
 ### Using the CLI
@@ -161,6 +167,8 @@ The default configuration can be viewed using the `dip config` command:
 ```json
 {
     "path": "/usr/local/bin",
+    "home": "/path/to/dip/config.json",
+    "version": "0.1.4",
     "dips": {}
 }
 ```
@@ -185,10 +193,13 @@ $ dip install dipex /path/to/docker-compose-dir
 $ dip config
 {
     "path": "/path/to/bin",
+    "home": "/path/to/dip/config.json",
+    "version": "0.1.4",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
-            "path": "/path/to/bin"
+            "path": "/path/to/bin",
+            "remote": "origin"
         }
     }
 }
@@ -201,10 +212,13 @@ $ dip install --path /my/bin dipex /path/to/docker-compose-dir
 $ dip config
 {
     "path": "/path/to/bin",
+    "home": "/path/to/dip/config.json",
+    "version": "0.1.4",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
-            "path": "/my/bin"
+            "path": "/my/bin",
+            "remote": "origin"
         }
     }
 }
@@ -216,7 +230,8 @@ Use `dip config NAME` to display the configuration of an installed CLI:
 $ dip config dipex
 {
     "home": "/path/to/docker-compose-dir",
-    "path": "/my/bin"
+    "path": "/my/bin",
+    "remote": "origin"
 }
 ```
 
