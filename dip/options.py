@@ -1,6 +1,8 @@
 """
 Define options for dip commands.
 """
+import os
+
 import click
 from . import __version__
 from . import config
@@ -13,6 +15,12 @@ def print_version(ctx, param, value):
         return
     click.echo(__version__)
     ctx.exit()
+
+
+# pylint: disable=unused-argument
+def expand_home(ctx, param, value):
+    """ Expand home argument to absolute path. """
+    return os.path.abspath(os.path.expanduser(value))
 
 
 class Key(click.types.StringParamType):
@@ -39,7 +47,7 @@ CONFIG = config.read()
 KEYS = click.argument('keys', nargs=-1)
 NAME = click.argument('name', type=Name())
 PATH = click.argument('path', type=Path())
-HOME = click.argument('home', default='.', type=Path())
+HOME = click.argument('home', default='.', type=Path(), callback=expand_home)
 SERVICE = click.argument('service', type=Service(), nargs=-1)
 GLOBAL = click.option('-g', '--global', type=Key(), is_flag=True,
                       help='Global configuration')
