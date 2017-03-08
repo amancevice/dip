@@ -49,6 +49,15 @@ check_remote() {
   fi
 }
 
+# Ensure `dip` is installed
+if [ -z $(which dip) ]; then
+  echo 'dip is not installed'
+  exit 1
+elif [ -z $(dip config %%name%%)]
+  echo '%%name%% is not configured in dip, please reinstall'
+  exit 1
+fi
+
 cd $(dip config %%name%% home)
 remote=$(dip config %%name%% remote)
 branch=$(gitbranch)
