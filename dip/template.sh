@@ -50,10 +50,10 @@ check_remote() {
 }
 
 # Ensure `dip` is installed
-if [ -z $(which dip) ]; then
+if [ -z "$(which dip)" ]; then
   echo 'dip is not installed, please reinstall'
   exit 1
-elif [ -z $(dip config %%name%%) ]; then
+elif [ -z "$(dip config %%name%%)" ]; then
   echo '%%name%% is not configured in dip, please reinstall'
   exit 1
 fi
