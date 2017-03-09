@@ -23,9 +23,7 @@ pip install dip
 
 ## Tracking a git remote
 
-1. Write a CLI in whatever language you choose
-2. Create a `Dockerfile` that installs your CLI application
-3. Write a `docker-compose.yml` file that builds the image and defines the run-time configuration
+1. Follow steps 1-3 above
 4. Commit these files to a git remote named `origin` (or whatever you choose)
 5. Run `dip install <service> --remote origin` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote
 5. Run `dip uninstall <service>` to remove the executable from the file system
