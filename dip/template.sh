@@ -56,6 +56,12 @@ check_remote() {
   fi
 }
 
+# Ensure `realpath` is installed
+if [ -z "$(which realpath)" ]; then
+  echo 'Please install realpath (`brew install coreutils` on macOS)'
+  exit 1
+fi
+
 # Ensure `dip` is installed
 if [ -z "$(which dip)" ]; then
   echo 'dip is not installed, please reinstall'
