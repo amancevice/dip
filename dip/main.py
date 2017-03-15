@@ -72,9 +72,12 @@ def config_(keys, **kwargs):
             # Print pretty JSON if result is a dict
             if isinstance(cfg, dict):
                 click.echo(json.dumps(cfg, sort_keys=True, indent=4))
-            # Otherwise, just echo result
-            else:
+            # If it's valid echo result
+            elif cfg:
                 click.echo(cfg)
+            # Otherwise, exit
+            else:
+                sys.exit(1)
 
 
 @dip.command('env')

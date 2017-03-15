@@ -65,6 +65,7 @@ def test_install(mock_read, mock_write):
                 'home': '/home',
                 'path': '/path',
                 'remote': None,
+                'branch': None,
                 'env': {}
             }
         },
@@ -91,6 +92,7 @@ def test_install_remote(mock_read, mock_write):
                 'home': '/home',
                 'path': '/path',
                 'remote': 'origin',
+                'branch': None,
                 'env': {}
             }
         },

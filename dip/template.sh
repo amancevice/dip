@@ -28,7 +28,11 @@ remote_exists() {
 }
 
 branch_exists() {
-  git ls-remote $1 | grep "refs/heads/$(gitbranch)" > /dev/null 2>&1
+  git ls-remote $1 | grep "refs/heads/$2" > /dev/null 2>&1
+}
+
+compose_exists() {
+  git cat-file -e $1/$2:$(remotepath)/docker-compose.yml > /dev/null 2>&1
 }
 
 gitdiff() {
@@ -38,8 +42,11 @@ gitdiff() {
 check_remote() {
   if isgit; then
     if remote_exists $1; then
-      if ! branch_exists $1; then
+      if ! branch_exists $1 $2; then
         echo -e "${AMBER}The remote branch $1/$2 does not exist${NC}"
+        return 1
+      elif ! compose_exists $1 $2; then
+        echo -e "${AMBER}The remote branch $1/$2 does not contain a docker-compose.yml${NC}"
         return 1
       fi
     else
@@ -60,13 +67,13 @@ fi
 
 cd $(dip config %%name%% home)
 remote=$(dip config %%name%% remote)
-branch=$(gitbranch)
+branch=$(dip config %%name%% branch || gitbranch)
 
 # Check for divergence if git is configured
 if [ -n "${remote}" ]; then
   if check_remote ${remote} ${branch}; then
     if [ -n "$(gitdiff ${remote} ${branch})" ]; then
-      echo -e "${AMBER}The local docker-compose.yml has diverged from remote $(dip config %%name%% remote)/$(gitbranch)\\n${NC}"
+      echo -e "${AMBER}The local docker-compose.yml has diverged from remote ${remote}/${branch}\\n${NC}"
       gitdiff ${remote} ${branch}
       echo
       echo 'Sleeping for 10s'

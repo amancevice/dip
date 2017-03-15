@@ -60,9 +60,14 @@ def dict_merge(target, *args):
 def install(name, home, path, remote, env, cfgpath=None):
     """ Add dip config to global config. """
     with current(cfgpath) as cfg:
+        try:
+            remote, branch = remote.split('/')
+        except (ValueError, AttributeError):
+            branch = None
         cfg['dips'][name] = {'home': home,
                              'path': path,
                              'remote': remote,
+                             'branch': branch,
                              'env': env}
         write(cfg, cfgpath)
 
@@ -109,6 +114,7 @@ def write(config=None, path=None):
     try:
         cfg = easysettings.JSONSettings()
         cfg.update(config)
+        cfg['version'] = __version__
         cfg.save(path, sort_keys=True)
     except (OSError, IOError):
         raise exc.DipConfigError(path)

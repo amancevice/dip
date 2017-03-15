@@ -193,6 +193,22 @@ def test_config_no_key(mock_read):
 
 
 @mock.patch('dip.config.read')
+def test_config_null_key(mock_read):
+    mock_read.return_value = {
+        'path': '/path',
+        'dips': {
+            'dipex': {
+                'remote': None
+            }
+        }
+    }
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['dipex', 'remote'])
+    assert result.exit_code == 1
+    assert result.output == ''
+
+
+@mock.patch('dip.config.read')
 @mock.patch('os.chdir')
 @mock.patch('os.execv')
 def test_pull(mock_exe, mock_chd, mock_cfg):
