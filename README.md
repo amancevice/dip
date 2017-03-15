@@ -24,8 +24,8 @@ pip install dip
 ## Tracking a git remote
 
 1. Follow steps 1-3 above
-2. Commit these files to a git remote named `origin` (or whatever you choose)
-3. Run `dip install <service> --remote origin` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote
+2. Commit these files to a branch on a git remote (eg. `origin/master`)
+3. Run `dip install <service> --remote <remote>/<branch>` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote/branch
 4. Run `dip uninstall <service>` to remove the executable from the file system
 
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
