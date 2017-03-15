@@ -214,3 +214,30 @@ def test_pull_err(mock_exe, mock_chd, mock_cfg):
     result = runner.invoke(main.pull, ['test'])
     mock_chd.assert_called_once_with('/home')
     assert result.output == "Error: Unable to pull updates for 'test'\n"
+
+
+@mock.patch('dip.config.read')
+def test_env(mock_read):
+    mock_read.return_value = {
+        'dips': {
+            'fizz': {
+                'env': {
+                    'FIZZ': 'BUZZ',
+                    'FUZZ': 'JAZZ'
+                }
+            }
+        }
+    }
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.env_, ['fizz'])
+    assert result.exit_code == 0
+    assert result.output in ['-e FIZZ=BUZZ -e FUZZ=JAZZ\n',
+                             '-e FUZZ=JAZZ -e FIZZ=BUZZ\n']
+
+
+@mock.patch('dip.config.read')
+def test_env_err(mock_read):
+    mock_read.return_value = {'dips': {}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.env_, ['fizz'])
+    assert result.exit_code == 1

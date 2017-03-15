@@ -56,13 +56,14 @@ def dict_merge(target, *args):
     return target
 
 
-def install(name, home, path, remote, cfgpath=None):
+# pylint: disable=too-many-arguments
+def install(name, home, path, remote, env, cfgpath=None):
     """ Add dip config to global config. """
     with current(cfgpath) as cfg:
-        if remote is None:
-            cfg['dips'][name] = {'home': home, 'path': path}
-        else:
-            cfg['dips'][name] = {'home': home, 'path': path, 'remote': remote}
+        cfg['dips'][name] = {'home': home,
+                             'path': path,
+                             'remote': remote,
+                             'env': env}
         write(cfg, cfgpath)
 
 

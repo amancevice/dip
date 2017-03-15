@@ -58,12 +58,14 @@ def test_install(mock_read, mock_write):
         'version': '0.0.0'
     }
     mock_read.return_value = exp
-    config.install('test', '/home', '/path', None)
+    config.install('test', '/home', '/path', None, {})
     mock_write.assert_called_once_with({
         'dips': {
             'test': {
                 'home': '/home',
-                'path': '/path'
+                'path': '/path',
+                'remote': None,
+                'env': {}
             }
         },
         'home': '/home',
@@ -82,13 +84,14 @@ def test_install_remote(mock_read, mock_write):
         'version': '0.0.0'
     }
     mock_read.return_value = exp
-    config.install('test', '/home', '/path', 'origin')
+    config.install('test', '/home', '/path', 'origin', {})
     mock_write.assert_called_once_with({
         'dips': {
             'test': {
                 'home': '/home',
                 'path': '/path',
-                'remote': 'origin'
+                'remote': 'origin',
+                'env': {}
             }
         },
         'home': '/home',

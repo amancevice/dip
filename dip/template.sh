@@ -76,4 +76,5 @@ if [ -n "${remote}" ]; then
 fi
 
 # Run command
-docker-compose run --rm %%name%% $*
+env=$(dip env %%name%%)
+docker-compose run --rm ${env} %%name%% $*

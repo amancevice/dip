@@ -77,13 +77,28 @@ def config_(keys, **kwargs):
                 click.echo(cfg)
 
 
+@dip.command('env')
+@options.NAME
+def env_(name):
+    """ Show docker-compose ENV flags. """
+    with config.current() as cfg:
+        try:
+            env = cfg['dips'][name]['env']
+            cmd = ['='.join(x) for x in env.items()]
+            click.echo('-e ' + ' -e '.join(cmd))
+        except KeyError:
+            sys.exit(1)
+
+
+# pylint: disable=too-many-arguments
 @dip.command()
 @options.NAME
 @options.HOME
 @options.PATH_OPT
-@options.DRY_RUN
 @options.REMOTE
-def install(name, home, path, dry_run, remote):
+@options.ENV
+@options.SECRET
+def install(name, home, path, remote, env, secret):
     """ Install CLI by name.
 
         \b
@@ -91,12 +106,15 @@ def install(name, home, path, dry_run, remote):
         dip install fizz .             # Explicit path
         dip install fizz /path/to/dir  # Absolute path
     """
+    # Interactively set ENV
+    for sec in secret:
+        env[sec] = click.prompt(sec, hide_input=True)  # pragma: no cover
+
     # Write executable
-    if dry_run is False:
-        cli.write(name, path)
+    cli.write(name, path)
 
     # Update config
-    config.install(name, home, path, remote)
+    config.install(name, home, path, remote, env)
 
     # Finish
     msg = "Installed {name} to {path}"
