@@ -30,6 +30,10 @@ pip install dip
 
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
 
+## Installing with ENV variables
+
+Use the `--env` option to install the CLI with an environment variable set. Use the `--secret` option to enter the environment variable in an interactive prompt where the input is hidden.
+
 ### Why Docker?
 
 When building a custom application it is sometimes necessary to include libraries and packages.
