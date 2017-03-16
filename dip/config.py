@@ -97,6 +97,29 @@ def set_config(cfg, keys, value):
     write(new_cfg)
 
 
+def get_config(cfg, keys):
+    """ Helper to get a config value.
+
+        Arguments:
+            cfg   (dict):   Current configuration
+            keys  (tuple):  Path to target key
+            value (str):    New value to set
+    """
+    return functools.reduce(lambda x, y: x[y], keys, cfg)
+
+
+def rm_config(cfg, keys, value):
+    """ Helper to remove a config value.
+
+        Arguments:
+            cfg   (dict):   Current configuration
+            keys  (tuple):  Path to target key
+            value (str):    New value to set
+    """
+    del get_config(cfg, keys)[value]
+    write(cfg)
+
+
 def uninstall(name, path=None):
     """ Remove dip config to global config. """
     with current(path) as cfg:

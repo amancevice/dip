@@ -19,7 +19,7 @@ def test_version():
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip, ['--version'])
     assert result.exit_code == 0
-    assert result.output == dip.__version__ + '\n'
+    assert result.output == "dip, version {vsn}\n".format(vsn=dip.__version__)
 
 
 def test_help():
@@ -30,14 +30,14 @@ def test_help():
 
 
 @mock.patch('dip.config.read')
-def test_show(mock_cfg):
+def test_show(mock_read):
     with tempfile.NamedTemporaryFile() as tmp:
         path, name = os.path.split(tmp.name)
         compose = os.path.join(path, 'docker-compose.yml')
         contents = "version: '2'\n  services:\n    fizz:\n      image: fizz\n"
         with open(compose, 'w') as cmp:
             cmp.write(contents)
-        mock_cfg.return_value = {
+        mock_read.return_value = {
             'dips': {'fizz': {'home': path, 'path': path}},
             'path': '/usr/local/bin'}
         runner = click.testing.CliRunner()
@@ -47,8 +47,8 @@ def test_show(mock_cfg):
 
 
 @mock.patch('dip.config.read')
-def test_show_ioerr(mock_cfg):
-    mock_cfg.return_value = {
+def test_show_ioerr(mock_read):
+    mock_read.return_value = {
         'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
         'path': '/usr/local/bin'}
     runner = click.testing.CliRunner()
@@ -59,8 +59,8 @@ def test_show_ioerr(mock_cfg):
 
 
 @mock.patch('dip.config.read')
-def test_show_keyerr(mock_cfg):
-    mock_cfg.return_value = {
+def test_show_keyerr(mock_read):
+    mock_read.return_value = {
         'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
         'path': '/usr/local/bin'}
     runner = click.testing.CliRunner()
@@ -71,7 +71,7 @@ def test_show_keyerr(mock_cfg):
 
 @mock.patch('dip.cli.write')
 @mock.patch('dip.config.write')
-def test_install(mock_cfg, mock_write):
+def test_install(mock_cli, mock_write):
     name = 'fizz'
     with tempfile.NamedTemporaryFile() as tmppath:
         with tempfile.NamedTemporaryFile() as tmphome:
@@ -87,7 +87,7 @@ def test_install(mock_cfg, mock_write):
 
 @mock.patch('dip.cli.write')
 @mock.patch('dip.config.write')
-def test_install_remote(mock_cfg, mock_write):
+def test_install_remote(mock_cli, mock_write):
     name = 'fizz'
     with tempfile.NamedTemporaryFile() as tmppath:
         with tempfile.NamedTemporaryFile() as tmphome:
@@ -106,10 +106,10 @@ def test_install_remote(mock_cfg, mock_write):
 @mock.patch('dip.cli.remove')
 @mock.patch('dip.config.write')
 @mock.patch('dip.config.read')
-def test_uninstall(mock_cfg, mock_write, mock_remove):
+def test_uninstall(mock_read, mock_write, mock_remove):
     with tempfile.NamedTemporaryFile() as tmp:
         path, tmpname = os.path.split(tmp.name)
-        mock_cfg.return_value = {
+        mock_read.return_value = {
             'path': path,
             'dips': {
                 'fizz': {
@@ -141,10 +141,10 @@ def test_config(mock_read):
 
 
 @mock.patch('dip.config.read')
-def test_config_global(mock_read):
+def test_config_naked(mock_read):
     mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['--global'])
+    result = runner.invoke(main.config_)
     assert result.exit_code == 0
     assert result.output == json.dumps(config.DEFAULT,
                                        sort_keys=True,
@@ -174,13 +174,30 @@ def test_config_dip(mock_read):
 
 @mock.patch('dip.config.read')
 @mock.patch('dip.config.write')
-def test_config_set(mock_write, mock_read):
+def test_config_global_set(mock_write, mock_read):
     mock_read.return_value = {'path': '/path', 'dips': {}}
     runner = click.testing.CliRunner()
     result = runner.invoke(main.config_,
                            ['--global', 'path', '--set', '/fizz'])
     assert result.exit_code == 0
     mock_write.assert_called_once_with({'path': u'/fizz', 'dips': {}})
+
+
+@mock.patch('dip.config.read')
+@mock.patch('dip.config.write')
+def test_config_rm(mock_write, mock_read):
+    mock_read.return_value = {
+        'path': '/path',
+        'dips': {
+            'test': {
+                'remote': None
+            }
+        }
+    }
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['test', '--rm', 'remote'])
+    assert result.exit_code == 0
+    mock_write.assert_called_once_with({'path': '/path', 'dips': {'test': {}}})
 
 
 @mock.patch('dip.config.read')
@@ -208,11 +225,37 @@ def test_config_null_key(mock_read):
     assert result.output == ''
 
 
+def test_config_rm_set_err():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_,
+                           ['test', 'path', '--set', '/fizz', '--rm', 'fizz'])
+    assert result.exit_code == 2
+
+
+def test_config_rm_global_err():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_,
+                           ['--global', 'path', '--rm', 'path'])
+    assert result.exit_code == 2
+
+
+def test_config_set_no_name_err():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['--set', 'path'])
+    assert result.exit_code == 2
+
+
+def test_config_set_no_keys_err():
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.config_, ['test', '--set', 'path'])
+    assert result.exit_code == 2
+
+
 @mock.patch('dip.config.read')
 @mock.patch('os.chdir')
 @mock.patch('os.execv')
-def test_pull(mock_exe, mock_chd, mock_cfg):
-    mock_cfg.return_value = {'dips': {'test': {'home': '/home'}}}
+def test_pull(mock_exe, mock_chd, mock_read):
+    mock_read.return_value = {'dips': {'test': {'home': '/home'}}}
     runner = click.testing.CliRunner()
     result = runner.invoke(main.pull, ['test'])
     mock_chd.assert_called_once_with('/home')
@@ -223,8 +266,8 @@ def test_pull(mock_exe, mock_chd, mock_cfg):
 @mock.patch('dip.config.read')
 @mock.patch('os.chdir')
 @mock.patch('os.execv')
-def test_pull_err(mock_exe, mock_chd, mock_cfg):
-    mock_cfg.return_value = {'dips': {'test': {'home': '/home'}}}
+def test_pull_err(mock_exe, mock_chd, mock_read):
+    mock_read.return_value = {'dips': {'test': {'home': '/home'}}}
     mock_exe.side_effect = OSError
     runner = click.testing.CliRunner()
     result = runner.invoke(main.pull, ['test'])

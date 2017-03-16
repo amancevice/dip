@@ -40,6 +40,17 @@ If a CLI is installed with the `--remote` flag, any differences between the loca
 
 Use the `--env` option to install the CLI with an environment variable set. Use the `--secret` option to enter the environment variable in an interactive prompt where the input is hidden.
 
+Ex.
+
+```bash
+cd /path/to/docker-compose-dir
+dip install mycli . \
+  --remote origin/master \
+  --env FIZZ=BUZZ
+```
+
+Will generate an executable with the name `mycli`, monitor the `origin/master` remote/branch for changes and set the `ENV` variable `FIZZ` to the value `BUZZ` each time the `mycli` is executed.
+
 ### Why Docker?
 
 When building a custom application it is sometimes necessary to include libraries and packages.
@@ -176,7 +187,7 @@ The default configuration can be viewed using the `dip config` command:
 {
     "path": "/usr/local/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.1.4",
+    "version": "0.2.3",
     "dips": {}
 }
 ```
@@ -202,12 +213,14 @@ $ dip config
 {
     "path": "/path/to/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.1.4",
+    "version": "0.2.3",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
             "path": "/path/to/bin",
-            "remote": "origin"
+            "remote": null,
+            "branch": null,
+            "env": {}
         }
     }
 }
@@ -221,12 +234,14 @@ $ dip config
 {
     "path": "/path/to/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.1.4",
+    "version": "0.2.3",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
             "path": "/my/bin",
-            "remote": "origin"
+            "remote": null,
+            "branch": null,
+            "env": {}
         }
     }
 }
@@ -239,7 +254,9 @@ $ dip config dipex
 {
     "home": "/path/to/docker-compose-dir",
     "path": "/my/bin",
-    "remote": "origin"
+    "remote": null,
+    "branch": null,
+    "env": {}
 }
 ```
 

@@ -16,7 +16,7 @@ from . import options
 # pylint: disable=unused-argument
 @click.group()
 @options.VERSION
-def dip(version):
+def dip():
     """ Install CLIs using docker-compose.
 
         See https://github.com/amancevice/dip for details & instructions.
@@ -47,34 +47,53 @@ def show(name):
             raise exc.DockerComposeError(name)
 
 
+# pylint: disable=invalid-name
 @dip.command('config')
 @options.GLOBAL
+@options.REMOVE
 @options.SET
+@options.OPTIONAL_NAME
 @options.KEYS
-def config_(keys, **kwargs):
-    """ Show current dip configuration. """
-    gbl = kwargs['global']
-    s_t = kwargs['set']
+def config_(gbl, rm, s_t, name, keys):
+    """ Show current dip configuration.
+
+        \b
+        dip config NAME                      # Get NAME config dict
+        dip config NAME remote               # Get name of NAME remote
+        dip config NAME remote --set origin  # Set NAME remote to 'origin'
+        dip config NAME --rm remote          # Remove NAME remote key
+        dip config --global home              # Get path to global config file
+    """
     with config.current() as cfg:
-        # Add 'dips' to tuple of keys to drill into if no --global flag
-        if gbl is not True and any(keys):
-            keys = (u'dips',) + keys
+
+        # Set up keys for --global or normal
+        if gbl:
+            keys = (gbl,)
+        elif name:
+            keys = ('dips', name) + keys
+
         # Set a config value if --set is provided
         if s_t is not None:
             config.set_config(cfg, keys, s_t)
+
+        # Remove a config value
+        elif rm is not None:
+            config.rm_config(cfg, keys, rm)
+
         # Otherwise, drill into config to fetch requested config
         else:
-            for key in keys:
-                try:
-                    cfg = cfg[key]
-                except KeyError:
-                    sys.exit(1)
+            # Get value or exit
+            try:
+                val = config.get_config(cfg, keys)
+            except KeyError:
+                sys.exit(1)
+
             # Print pretty JSON if result is a dict
-            if isinstance(cfg, dict):
-                click.echo(json.dumps(cfg, sort_keys=True, indent=4))
+            if isinstance(val, dict):
+                click.echo(json.dumps(val, sort_keys=True, indent=4))
             # If it's valid echo result
-            elif cfg:
-                click.echo(cfg)
+            elif val:
+                click.echo(val)
             # Otherwise, exit
             else:
                 sys.exit(1)
