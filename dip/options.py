@@ -104,7 +104,8 @@ ENV = click.option('-e', '--env', multiple=True, type=EnvVal(),
 GLOBAL = click.option('-g', '--global', 'gbl', type=Key(), is_eager=True,
                       help='Get global configuration key')
 REMOVE = click.option('-r', '--rm', type=Key(),
-                      callback=validate_rm_set, help='Remove configuration key')
+                      callback=validate_rm_set,
+                      help='Remove configuration key')
 SECRET = click.option('-x', '--secret', multiple=True, type=Env(),
                       callback=validate_secret, help='Set secret ENV')
 PATH_OPT = click.option('-p', '--path', default=CONFIG['path'], type=Path(),
