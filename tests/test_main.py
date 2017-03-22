@@ -295,6 +295,21 @@ def test_env(mock_read):
 
 
 @mock.patch('dip.config.read')
+def test_env_no_env(mock_read):
+    mock_read.return_value = {
+        'dips': {
+            'fizz': {
+                'env': {}
+            }
+        }
+    }
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.env_, ['fizz'])
+    assert result.exit_code == 0
+    assert result.output == ''
+
+
+@mock.patch('dip.config.read')
 def test_env_err(mock_read):
     mock_read.return_value = {'dips': {}}
     runner = click.testing.CliRunner()

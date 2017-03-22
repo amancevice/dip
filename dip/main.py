@@ -106,8 +106,9 @@ def env_(name):
     with config.current() as cfg:
         try:
             env = cfg['dips'][name]['env']
-            cmd = ['='.join(x) for x in env.items()]
-            click.echo('-e ' + ' -e '.join(cmd))
+            if env:
+                cmd = ['='.join(x) for x in env.items()]
+                click.echo('-e ' + ' -e '.join(cmd))
         except KeyError:
             sys.exit(1)
 
