@@ -1,11 +1,10 @@
 version: '2'
 services:
-  redis:
-    image: redis:alpine
   dipex:
-    image: dipex
+    image: amancevice/dipex
     build: .
-    depends_on:
-      - redis
     environment:
-      REDIS_HOST: redis
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ~/.aws:/root/.aws

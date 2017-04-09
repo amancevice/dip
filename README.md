@@ -72,69 +72,35 @@ You can accomplish the same thing with aliases, but this is a little more fun.
 
 ## Example
 
-Consider the task of writing a *very* simple CLI to pull data out of Redis and write it to S3.
-
-In order to do this we will use Python, the AWS CLI and the Redis CLI libraries.
-
-### Writing a CLI
-
-Our CLI will be intentionally very simple; it will accept a single positional argument.
-
-If this argument is the string `setup` it will seed Redis with some dummy data.
-Otherwise, it will query Redis for this key, and write the result to a text file on S3.
-
-```bash
-#!/bin/sh
-
-set -e
-case "$1" in
-
-  # Seed Redis with dummy data...
-  setup)
-    echo "Pushing data to redis..."
-    redis-cli -h $REDIS_HOST -n 1 SET mykey0 myval0 > /dev/null
-    redis-cli -h $REDIS_HOST -n 1 SET mykey1 myval1 > /dev/null
-    redis-cli -h $REDIS_HOST -n 1 SET mykey2 myval2 > /dev/null
-    redis-cli -h $REDIS_HOST -n 1 KEYS '*'
-    ;;
-
-  # Query Redis and write to the S3 location saved in the S3_PREFIX ENV var
-  *)
-    echo "Feching $* from $REDIS_HOST..."
-    redis-cli -h $REDIS_HOST -n 1 GET $* > /tmp/result
-    echo "Pushing result to $S3_PREFIX/result..."
-    aws s3 cp /tmp/result $S3_PREFIX/result
-    ;;
-esac
-```
+Consider a trivial example of a Docker image with the AWS CLI installed.
 
 ### Writing a `Dockerfile`
 
-In our `Dockerfile` we should install all our software, copying in our CLI above, and define a volume for mounting our AWS credentials:
+We will create a [`Dockerfile`](./example/Dockerfile) that installs this CLI and configures a `VOLUME` for mounting your AWS credentials:
 
 ```Dockerfile
-FROM python:3.6-alpine
-RUN pip install awscli && apk add --no-cache redis
-COPY cli.sh /root/cli.sh
+FROM alpine
+RUN apk add --no-cache less groff python3 && \
+    pip3 install awscli
 VOLUME /root/.aws
-ENTRYPOINT ["/bin/sh", "cli.sh"]
+ENTRYPOINT ["aws"]
 ```
 
 ### Writing a `docker-compose.yml`
 
-Our `docker-compose.yml` will define our service, `dipex`, and lay down configurations for a Redis host, an S3 prefix (where our file will go), and mount in our `~/.aws` directory:
+Our `docker-compose.yml` will define our service, `dipex`, and configure our AWS credentials (either through `ENV` variables or the `~/.aws` directory):
 
 ```
 version: '2'
 services:
   dipex:
-    image: dipex
+    image: amancevice/dipex
     build: .
     environment:
-      S3_PREFIX: s3://mybucket/path/to/my/prefix
-      REDIS_HOST: my-redis-host.com
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     volumes:
-      - "~/.aws:/root/.aws"
+      - ~/.aws:/root/.aws
 ```
 
 ### Installing the CLI
@@ -148,27 +114,19 @@ dip install dipex
 Or, if you would like to install tracking a remote:
 
 ```bash
-dip install dipex --remote origin  # or whatever your remote is aliased
+dip install dipex --remote origin/master
 ```
 
 If you are not currently inside the directory where your `docker-compose.yml` file is, you may supply it as a positional argument:
 
 ```bash
-dip install dipex /path/to/docker-compose-dir [--remote origin]
+dip install dipex /path/to/docker-compose-dir [--remote origin/master]
 ```
 
 ### Using the CLI
 
 ```bash
-$ dipex setup
-Pushing data to redis...
-1) "mykey1"
-2) "mykey0"
-3) "mykey2"
-
-$ dipex mykey1
-Feching mykey1 from my-redis-host.com...
-Pushing result to s3://bucket/path/to/my/prefix/result...
+$ dipex s3 ls s3://bkt/path/to/key
 ```
 
 ### Uninstall the CLI
@@ -188,7 +146,7 @@ The default configuration can be viewed using the `dip config` command:
     "path": "/usr/local/bin",
     "home": "/path/to/dip/config.json",
     "version": "0.2.3",
-    "dips": {}
+    "dips": {},
 }
 ```
 
