@@ -4,7 +4,7 @@ AMBER='\033[0;33m'
 NC='\033[0m'
 
 gitbranch() {
-  git branch | grep \* | cut -d ' ' -f2
+  [ -d ".git" ] && git branch | grep \* | cut -d ' ' -f2
 }
 
 gitremotes() {
