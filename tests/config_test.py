@@ -2,6 +2,7 @@ import contextlib
 import json
 import pkg_resources as pkg
 
+import compose
 import mock
 import pytest
 from dip import config
@@ -45,6 +46,23 @@ def test_config_for_err(mock_read):
     mock_read.return_value = exp
     with pytest.raises(exc.CliNotInstalled):
         with config.config_for('test') as ret:
+            pass
+
+
+@mock.patch('compose.cli.command.get_project')
+def test_compose_service(mock_proj):
+    proj = mock.MagicMock()
+    mock_proj.return_value = proj
+    with config.compose_service('mysvc', '/path/to/project') as svc:
+        mock_proj.assert_called_once_with('/path/to/project')
+        proj.get_service.assert_called_once_with('mysvc')
+
+
+@mock.patch('compose.cli.command.get_project')
+def test_compose_service_err(mock_proj):
+    mock_proj.side_effect = compose.config.errors.ConfigurationError('err')
+    with pytest.raises(exc.DockerComposeError):
+        with config.compose_service('mysvc', '/path/to/project') as svc:
             pass
 
 

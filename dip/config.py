@@ -6,8 +6,10 @@ import functools
 import sys
 from copy import deepcopy
 
+import compose
 import easysettings
 import pkg_resources as pkg
+from compose.cli import command
 from . import __version__
 from . import exc
 
@@ -34,6 +36,16 @@ def config_for(name, path=None):
             yield cfg['dips'][name]
         except KeyError:
             raise exc.CliNotInstalled(name)
+
+
+@contextlib.contextmanager
+def compose_service(name, *args, **kwargs):
+    try:
+        proj = command.get_project(*args, **kwargs)
+        svc = proj.get_service(name)
+        yield svc
+    except compose.config.errors.ConfigurationError as err:
+        raise exc.DockerComposeError(err)
 
 
 def dict_merge(target, *args):
