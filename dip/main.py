@@ -2,7 +2,6 @@
 dip CLI tool main entrypoint
 """
 import json
-import os
 import sys
 
 import click
@@ -26,35 +25,28 @@ def dip():
 
 @dip.command(name='help')
 @click.pass_context
-def help_(ctx):
+def dip_help(ctx):
     """ Show this message. """
     click.echo(ctx.parent.command.get_help(ctx.parent))
 
 
-@dip.command()
+@dip.command('show')
 @options.NAME
-def show(name):
-    """ Show contents of docker-compose.yml. """
+def dip_show(name):
+    """ Show service configuration. """
     with config.config_for(name) as cfg:
-        # Get path to docker-compose.yml
-        path = os.path.join(cfg['home'], 'docker-compose.yml')
-
-        # Echo contents of docker-compose.yml
-        try:
-            with open(path, 'r') as compose:
-                click.echo(compose.read())
-        except (OSError, IOError):
-            raise exc.DockerComposeError(name)
+        with config.compose_service(name, cfg['home']) as svc:
+            click.echo(json.dumps(svc.config_dict(), indent=4, sort_keys=True))
 
 
 # pylint: disable=invalid-name
 @dip.command('config')
 @options.GLOBAL
 @options.REMOVE
-@options.SET
+@options.CFG_SET
 @options.OPTIONAL_NAME
 @options.KEYS
-def config_(gbl, rm, s_t, name, keys):
+def dip_config(gbl, rm, cfg_set, name, keys):
     """ Show current dip configuration.
 
         \b
@@ -73,8 +65,8 @@ def config_(gbl, rm, s_t, name, keys):
             keys = ('dips', name) + keys
 
         # Set a config value if --set is provided
-        if s_t is not None:
-            config.set_config(cfg, keys, s_t)
+        if cfg_set is not None:
+            config.set_config(cfg, keys, cfg_set)
 
         # Remove a config value
         elif rm is not None:
@@ -101,7 +93,7 @@ def config_(gbl, rm, s_t, name, keys):
 
 @dip.command('env')
 @options.NAME
-def env_(name):
+def dip_env(name):
     """ Show docker-compose ENV flags. """
     with config.current() as cfg:
         try:
@@ -114,14 +106,14 @@ def env_(name):
 
 
 # pylint: disable=too-many-arguments
-@dip.command()
+@dip.command('install')
 @options.NAME
 @options.HOME
 @options.PATH_OPT
 @options.REMOTE
 @options.ENV
 @options.SECRET
-def install(name, home, path, remote, env, secret):
+def dip_install(name, home, path, remote, env, secret):
     """ Install CLI by name.
 
         \b
@@ -146,29 +138,33 @@ def install(name, home, path, remote, env, secret):
     click.echo(msg.format(name=cname, path=cpath))
 
 
-@dip.command()
-@options.NAME
-@options.SERVICE
-def pull(name, service):
+@dip.command('pull')
+@options.ALL_OPT
+@options.ALL_OR_NAME
+def dip_pull(all_opt, name):
     """ Pull updates from docker-compose. """
-    # Get services to pull
-    service = service or (name,)
-    service = list(service)
-
-    # Get CLI config
-    with config.config_for(name) as cfg:
-        try:
-            os.chdir(cfg['home'])
-            os.execv('/usr/local/bin/docker-compose',
-                     ['docker-compose', 'pull'] + service)
-        except (OSError, IOError):
-            raise exc.DipError("Unable to pull updates for '{name}'"
-                               .format(name=name))
+    # Get names to pull
+    with config.current() as cfg:
+        clis = [x for x in cfg['dips'].items() if all_opt or x[0] == name]
+        for cliname, clicfg in clis:
+            try:
+                with config.compose_service(cliname, clicfg['home']) as svc:
+                    svc.pull()
+            except exc.DockerComposeError as err:
+                click.echo(err, err=True)
 
 
-@dip.command()
+# @dip.command('reinstall')
+# @options.ALL_OPT
+# @options.ALL_OR_NAME
+# def dip_reinstall(all_opt, name):
+#     """ Reinstall CLI by name. """
+#     pass
+
+
+@dip.command('uninstall')
 @options.NAME
-def uninstall(name):
+def dip_uninstall(name):
     """ Uninstall CLI by name. """
     with config.config_for(name) as cfg:
         # Remove executable

@@ -1,3 +1,5 @@
+import collections
+import contextlib
 import json
 import os
 import tempfile
@@ -7,6 +9,15 @@ import dip
 import mock
 from dip import config
 from dip import main
+
+
+@contextlib.contextmanager
+def mock_project():
+    svc = mock.MagicMock()
+    proj = mock.MagicMock()
+    svc.config_dict.return_value = {'key': 'val'}
+    proj.get_service.return_value = svc
+    yield proj
 
 
 def test_dip():
@@ -30,43 +41,19 @@ def test_help():
 
 
 @mock.patch('dip.config.read')
-def test_show(mock_read):
-    with tempfile.NamedTemporaryFile() as tmp:
-        path, name = os.path.split(tmp.name)
-        compose = os.path.join(path, 'docker-compose.yml')
-        contents = "version: '2'\n  services:\n    fizz:\n      image: fizz\n"
-        with open(compose, 'w') as cmp:
-            cmp.write(contents)
-        mock_read.return_value = {
-            'dips': {'fizz': {'home': path, 'path': path}},
-            'path': '/usr/local/bin'}
+@mock.patch('compose.cli.command.get_project')
+def test_show(mock_get, mock_read):
+    mock_read.return_value = {
+        'dips': {'fizz': {'home': '/home', 'path': '/home/path'}},
+        'path': '/usr/local/bin'}
+    with mock_project() as mock_proj:
+        mock_get.return_value = mock_proj
         runner = click.testing.CliRunner()
-        result = runner.invoke(main.show, ['fizz'])
+        result = runner.invoke(main.dip_show, ['fizz'])
         assert result.exit_code == 0
-        assert result.output == contents + "\n"
-
-
-@mock.patch('dip.config.read')
-def test_show_ioerr(mock_read):
-    mock_read.return_value = {
-        'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
-        'path': '/usr/local/bin'}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.show, ['fizz'])
-    assert result.exit_code == 1
-    assert result.output == "Error: No docker-compose.yml definition found "\
-                            "for 'fizz' command\n"
-
-
-@mock.patch('dip.config.read')
-def test_show_keyerr(mock_read):
-    mock_read.return_value = {
-        'dips': {'fizz': {'home': '/path/to/fizz', 'path': '/usr/local/bin'}},
-        'path': '/usr/local/bin'}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.show, ['buzz'])
-    assert result.exit_code == 1
-    assert result.output == "Error: 'buzz' is not installed\n"
+        assert result.output == json.dumps({'key': 'val'},
+                                           indent=4,
+                                           sort_keys=True) + '\n'
 
 
 @mock.patch('dip.cli.write')
@@ -78,7 +65,7 @@ def test_install(mock_cli, mock_write):
             path, pathname = os.path.split(tmppath.name)
             home, homename = os.path.split(tmphome.name)
             runner = click.testing.CliRunner()
-            result = runner.invoke(main.install, ['--path', path, name, home])
+            result = runner.invoke(main.dip_install, ['--path', path, name, home])
             assert result.exit_code == 0
             assert result.output == "Installed fizz to {path}\n"\
                                     .format(path=path)
@@ -95,7 +82,7 @@ def test_install_remote(mock_cli, mock_write):
             home, homename = os.path.split(tmphome.name)
             runner = click.testing.CliRunner()
             result = runner.invoke(
-                main.install,
+                main.dip_install,
                 ['--path', path, '--remote', 'origin', name, home])
             assert result.exit_code == 0
             assert result.output == "Installed fizz to {path}\n"\
@@ -116,7 +103,7 @@ def test_uninstall(mock_read, mock_write, mock_remove):
                     'home': '/path/to/fizz',
                     'path': path}}}
         runner = click.testing.CliRunner()
-        result = runner.invoke(main.uninstall, ['fizz'])
+        result = runner.invoke(main.dip_uninstall, ['fizz'])
         assert result.exit_code == 0
         mock_remove.assert_called_once_with('fizz', path)
 
@@ -125,7 +112,7 @@ def test_uninstall(mock_read, mock_write, mock_remove):
 def test_uninstall_err(mock_remove):
     mock_remove.side_effect = OSError
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.uninstall, ['fizz'])
+    result = runner.invoke(main.dip_uninstall, ['fizz'])
     assert result.exit_code == 1
 
 
@@ -133,7 +120,7 @@ def test_uninstall_err(mock_remove):
 def test_config(mock_read):
     mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_)
+    result = runner.invoke(main.dip_config)
     assert result.exit_code == 0
     assert result.output == json.dumps(config.DEFAULT,
                                        sort_keys=True,
@@ -144,7 +131,7 @@ def test_config(mock_read):
 def test_config_naked(mock_read):
     mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_)
+    result = runner.invoke(main.dip_config)
     assert result.exit_code == 0
     assert result.output == json.dumps(config.DEFAULT,
                                        sort_keys=True,
@@ -155,7 +142,7 @@ def test_config_naked(mock_read):
 def test_config_global_path(mock_read):
     mock_read.return_value = config.DEFAULT
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['--global', 'path'])
+    result = runner.invoke(main.dip_config, ['--global', 'path'])
     assert result.exit_code == 0
     assert result.output == '/usr/local/bin\n'
 
@@ -167,7 +154,7 @@ def test_config_dip(mock_read):
         'dips': {
             'dipex': {'home': '/home'}}}
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['dipex', 'home'])
+    result = runner.invoke(main.dip_config, ['dipex', 'home'])
     assert result.exit_code == 0
     assert result.output == '/home\n'
 
@@ -177,7 +164,7 @@ def test_config_dip(mock_read):
 def test_config_global_set(mock_write, mock_read):
     mock_read.return_value = {'path': '/path', 'dips': {}}
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_,
+    result = runner.invoke(main.dip_config,
                            ['--global', 'path', '--set', '/fizz'])
     assert result.exit_code == 0
     mock_write.assert_called_once_with({'path': u'/fizz', 'dips': {}})
@@ -195,7 +182,7 @@ def test_config_rm(mock_write, mock_read):
         }
     }
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['test', '--rm', 'remote'])
+    result = runner.invoke(main.dip_config, ['test', '--rm', 'remote'])
     assert result.exit_code == 0
     mock_write.assert_called_once_with({'path': '/path', 'dips': {'test': {}}})
 
@@ -204,7 +191,7 @@ def test_config_rm(mock_write, mock_read):
 def test_config_no_key(mock_read):
     mock_read.return_value = {'path': '/path', 'dips': {}}
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['dipex'])
+    result = runner.invoke(main.dip_config, ['dipex'])
     assert result.exit_code == 1
     assert result.output == ''
 
@@ -220,59 +207,72 @@ def test_config_null_key(mock_read):
         }
     }
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['dipex', 'remote'])
+    result = runner.invoke(main.dip_config, ['dipex', 'remote'])
     assert result.exit_code == 1
     assert result.output == ''
 
 
 def test_config_rm_set_err():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_,
+    result = runner.invoke(main.dip_config,
                            ['test', 'path', '--set', '/fizz', '--rm', 'fizz'])
     assert result.exit_code == 2
 
 
 def test_config_rm_global_err():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_,
+    result = runner.invoke(main.dip_config,
                            ['--global', 'path', '--rm', 'path'])
     assert result.exit_code == 2
 
 
 def test_config_set_no_name_err():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['--set', 'path'])
+    result = runner.invoke(main.dip_config, ['--set', 'path'])
     assert result.exit_code == 2
 
 
 def test_config_set_no_keys_err():
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.config_, ['test', '--set', 'path'])
+    result = runner.invoke(main.dip_config, ['test', '--set', 'path'])
     assert result.exit_code == 2
 
 
 @mock.patch('dip.config.read')
-@mock.patch('os.chdir')
-@mock.patch('os.execv')
-def test_pull(mock_exe, mock_chd, mock_read):
+@mock.patch('compose.cli.command.get_project')
+def test_pull(mock_get, mock_read):
     mock_read.return_value = {'dips': {'test': {'home': '/home'}}}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.pull, ['test'])
-    mock_chd.assert_called_once_with('/home')
-    mock_exe.assert_called_once_with('/usr/local/bin/docker-compose',
-                                     ['docker-compose', 'pull', 'test'])
+    with mock_project() as mock_proj:
+        mock_get.return_value = mock_proj
+        runner = click.testing.CliRunner()
+        result = runner.invoke(main.dip_pull, ['test'])
+        mock_proj.get_service().pull.assert_called_once_with()
 
 
 @mock.patch('dip.config.read')
-@mock.patch('os.chdir')
-@mock.patch('os.execv')
-def test_pull_err(mock_exe, mock_chd, mock_read):
+def test_pull_err(mock_read):
     mock_read.return_value = {'dips': {'test': {'home': '/home'}}}
-    mock_exe.side_effect = OSError
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.pull, ['test'])
-    mock_chd.assert_called_once_with('/home')
-    assert result.output == "Error: Unable to pull updates for 'test'\n"
+    with mock_project() as mock_proj:
+        runner = click.testing.CliRunner()
+        result = runner.invoke(main.dip_pull, ['test'])
+        assert result.output == \
+            "No docker-compose.yml definition found for 'test' command\n"
+
+
+@mock.patch('dip.config.read')
+@mock.patch('compose.cli.command.get_project')
+def test_pull_all(mock_get, mock_read):
+    mock_read.return_value = {
+        'dips': collections.OrderedDict([('test1', {'home': '/home'}),
+                                         ('test2', {'home': '/home'})])}
+    with mock_project() as mock_proj:
+        mock_get.return_value = mock_proj
+        runner = click.testing.CliRunner()
+        result = runner.invoke(main.dip_pull, ['--all'])
+        mock_proj.get_service.assert_has_calls([mock.call('test1'),
+                                                mock.call().pull(),
+                                                mock.call('test2'),
+                                                mock.call().pull()])
 
 
 @mock.patch('dip.config.read')
@@ -288,7 +288,7 @@ def test_env(mock_read):
         }
     }
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.env_, ['fizz'])
+    result = runner.invoke(main.dip_env, ['fizz'])
     assert result.exit_code == 0
     assert result.output in ['-e FIZZ=BUZZ -e FUZZ=JAZZ\n',
                              '-e FUZZ=JAZZ -e FIZZ=BUZZ\n']
@@ -304,7 +304,7 @@ def test_env_no_env(mock_read):
         }
     }
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.env_, ['fizz'])
+    result = runner.invoke(main.dip_env, ['fizz'])
     assert result.exit_code == 0
     assert result.output == ''
 
@@ -313,5 +313,5 @@ def test_env_no_env(mock_read):
 def test_env_err(mock_read):
     mock_read.return_value = {'dips': {}}
     runner = click.testing.CliRunner()
-    result = runner.invoke(main.env_, ['fizz'])
+    result = runner.invoke(main.dip_env, ['fizz'])
     assert result.exit_code == 1

@@ -9,6 +9,14 @@ from . import __version__
 from . import config
 
 
+def validate_all_or_name(ctx, param, value):
+    """ Validate --rm & --set options. """
+    # Don't allow --rm and --set options
+    if value and (ctx.params.get('all_opt') or ctx.params.get('NAME')):
+        raise click.BadOptionUsage("Cannot use both --all option and NAME")
+    return value
+
+
 # pylint: disable=unused-argument
 def validate_env(ctx, param, value):
     """ Validate --env option. """
@@ -34,7 +42,7 @@ def validate_env(ctx, param, value):
 def validate_rm_set(ctx, param, value):
     """ Validate --rm & --set options. """
     # Don't allow --rm and --set options
-    if value and (ctx.params.get('rm') or ctx.params.get('s_t')):
+    if value and (ctx.params.get('rm') or ctx.params.get('cfg_set')):
         raise click.BadOptionUsage("Cannot use both --rm and --set options")
 
     # Don't allow --rm and --global options
@@ -42,7 +50,7 @@ def validate_rm_set(ctx, param, value):
         raise click.BadOptionUsage("Cannot use both --rm and --global options")
 
     # Validate --set
-    elif value and param.name == 's_t' and not ctx.params['gbl']:
+    elif value and param.name == 'cfg_set' and not ctx.params['gbl']:
         if not ctx.params['name']:
             raise click.BadOptionUsage("Cannot use --set without NAME")
         elif not ctx.params['keys']:
@@ -93,26 +101,47 @@ class Name(click.types.StringParamType):
 
 
 CONFIG = config.read()
-HOME = click.argument('HOME', default='.', type=Path(), callback=expand_home)
-KEYS = click.argument('KEYS', nargs=-1, is_eager=True)
+HOME = click.argument('HOME', callback=expand_home, default='.', type=Path())
+KEYS = click.argument('KEYS', is_eager=True, nargs=-1)
 NAME = click.argument('NAME', type=Name())
-OPTIONAL_NAME = click.argument('NAME', type=Name(), default='', is_eager=True)
+ALL_OR_NAME = click.argument('NAME',
+                             callback=validate_all_or_name,
+                             default='',
+                             type=Name())
+OPTIONAL_NAME = click.argument('NAME', default='', is_eager=True, type=Name())
 PATH = click.argument('PATH', type=Path())
-SERVICE = click.argument('service', nargs=-1)
-ENV = click.option('-e', '--env', multiple=True, type=EnvVal(),
-                   callback=validate_env, help='Optional ENV variable')
-GLOBAL = click.option('-g', '--global', 'gbl', type=Key(), is_eager=True,
-                      help='Get global configuration key')
-REMOVE = click.option('-r', '--rm', type=Key(),
+ENV = click.option('-e', '--env',
+                   callback=validate_env,
+                   help='Optional ENV variable',
+                   multiple=True,
+                   type=EnvVal())
+GLOBAL = click.option('-g', '--global', 'gbl',
+                      help='Get global configuration key',
+                      is_eager=True,
+                      type=Key())
+REMOVE = click.option('-r', '--rm',
                       callback=validate_rm_set,
-                      help='Remove configuration key')
-SECRET = click.option('-x', '--secret', multiple=True, type=Env(),
-                      callback=validate_secret, help='Set secret ENV')
-PATH_OPT = click.option('-p', '--path', default=CONFIG['path'], type=Path(),
+                      help='Remove configuration key',
+                      type=Key())
+SECRET = click.option('-x', '--secret',
+                      callback=validate_secret,
+                      help='Set secret ENV',
+                      multiple=True,
+                      type=Env())
+PATH_OPT = click.option('-p', '--path',
+                        default=CONFIG['path'],
                         help="Path to write executable [default: {}]"
-                        .format(CONFIG['path']))
-REMOTE = click.option('-r', '--remote', type=Name(),
-                      help='Optional git remote name')
-SET = click.option('-s', '--set', 's_t', type=Key(),
-                   callback=validate_rm_set, help='Set configuration option')
+                             .format(CONFIG['path']),
+                        type=Path())
+ALL_OPT = click.option('-a', '--all', 'all_opt',
+                       callback=validate_all_or_name,
+                       help='Run for all installed dips',
+                       is_flag=True)
+REMOTE = click.option('-r', '--remote',
+                      help='Optional git remote name',
+                      type=Name())
+CFG_SET = click.option('-s', '--set', 'cfg_set',
+                       callback=validate_rm_set,
+                       help='Set configuration option',
+                       type=Key())
 VERSION = click.version_option(__version__)

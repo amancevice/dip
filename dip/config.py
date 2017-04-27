@@ -44,8 +44,8 @@ def compose_service(name, *args, **kwargs):
         proj = command.get_project(*args, **kwargs)
         svc = proj.get_service(name)
         yield svc
-    except compose.config.errors.ConfigurationError as err:
-        raise exc.DockerComposeError(err)
+    except compose.config.errors.ConfigurationError:
+        raise exc.DockerComposeError(name)
 
 
 def dict_merge(target, *args):
