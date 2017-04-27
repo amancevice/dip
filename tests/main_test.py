@@ -90,6 +90,22 @@ def test_install_remote(mock_cli, mock_write):
             mock_write.assert_called_once_with(name, path)
 
 
+@mock.patch('dip.cli.write')
+@mock.patch('dip.config.write')
+def test_reinstall(mock_cli, mock_write):
+    name = 'fizz'
+    with tempfile.NamedTemporaryFile() as tmppath:
+        with tempfile.NamedTemporaryFile() as tmphome:
+            path, pathname = os.path.split(tmppath.name)
+            home, homename = os.path.split(tmphome.name)
+            runner = click.testing.CliRunner()
+            result = runner.invoke(main.dip_reinstall, [name])
+            assert result.exit_code == 0
+            assert result.output == "Reinstalled fizz to {path}\n"\
+                                    .format(path=path)
+            mock_write.assert_called_once_with(name, path)
+
+
 @mock.patch('dip.cli.remove')
 @mock.patch('dip.config.write')
 @mock.patch('dip.config.read')

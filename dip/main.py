@@ -143,9 +143,13 @@ def dip_install(name, home, path, remote, env, secret):
 @options.ALL_OR_NAME
 def dip_pull(all_opt, name):
     """ Pull updates from docker-compose. """
-    # Get names to pull
+    # Get config
     with config.current() as cfg:
+
+        # Get CLIs to pull
         clis = [x for x in cfg['dips'].items() if all_opt or x[0] == name]
+
+        # Pull each CLI
         for cliname, clicfg in clis:
             try:
                 with config.compose_service(cliname, clicfg['home']) as svc:
@@ -154,12 +158,29 @@ def dip_pull(all_opt, name):
                 click.echo(err, err=True)
 
 
-# @dip.command('reinstall')
-# @options.ALL_OPT
-# @options.ALL_OR_NAME
-# def dip_reinstall(all_opt, name):
-#     """ Reinstall CLI by name. """
-#     pass
+@dip.command('reinstall')
+@options.ALL_OPT
+@options.ALL_OR_NAME
+def dip_reinstall(all_opt, name):
+    """ Reinstall CLI by name. """
+    # Get config
+    with config.current() as cfg:
+
+        # Get CLIs to reinstall
+        clis = [x for x in cfg['dips'].items() if all_opt or x[0] == name]
+
+        # Reinstall each CLI
+        for cliname, clicfg in clis:
+            clipath = clicfg['path']
+
+            # Write executable
+            cli.write(cliname, clipath)
+
+            # Show installation
+            msg = "Reinstalled {name} to {path}"
+            cname = colored.stylize(cliname, colored.fg('spring_green_1'))
+            cpath = colored.stylize(clipath, colored.fg('blue'))
+            click.echo(msg.format(name=cname, path=cpath))
 
 
 @dip.command('uninstall')
