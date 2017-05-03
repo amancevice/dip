@@ -101,7 +101,7 @@ fi
 
 # Run command
 if [ -n "$(dip_config "${cfg}" env)" ]; then
-  docker-compose run --rm $(dip env %%name%%) %%nam%% $*
+  docker-compose run --rm $(dip env %%name%%) %%name%% $*
 else
-  docker-compose run --rm lb $*
+  docker-compose run --rm %%name%% $*
 fi
