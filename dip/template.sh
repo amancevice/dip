@@ -56,6 +56,11 @@ check_remote() {
   fi
 }
 
+dip_config() {
+  python -c "import json; print(json.loads('''$1''')['$2'] or '')"
+}
+
+
 # Ensure `realpath` is installed
 if [ -z "$(which realpath)" ]; then
   echo 'Please install realpath (`brew install coreutils` on macOS)'
@@ -66,14 +71,20 @@ fi
 if [ -z "$(which dip)" ]; then
   echo 'dip is not installed, please reinstall'
   exit 1
-elif [ -z "$(dip config %%name%%)" ]; then
+fi
+
+# Cache config
+cfg=$(dip config %%name%%)
+
+# Ensure config exists
+if [ -z "${cfg}" ]; then
   echo '%%name%% is not configured in dip, please reinstall'
   exit 1
 fi
 
-cd $(dip config %%name%% home)
-remote=$(dip config %%name%% remote)
-branch=$(dip config %%name%% branch || gitbranch)
+cd $(dip_config "${cfg}" home)
+remote=$(dip_config "${cfg}" remote)
+branch=$(dip_config "${cfg}" branch || gitbranch)
 
 # Check for divergence if git is configured
 if [ -n "${remote}" ]; then
@@ -89,5 +100,8 @@ if [ -n "${remote}" ]; then
 fi
 
 # Run command
-env=$(dip env %%name%%)
-docker-compose run --rm ${env} %%name%% $*
+if [ -n "$(dip_config "${cfg}" env)" ]; then
+  docker-compose run --rm $(dip env %%name%%) %%nam%% $*
+else
+  docker-compose run --rm lb $*
+fi
