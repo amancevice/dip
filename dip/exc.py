@@ -33,9 +33,17 @@ class CliNotInstalled(DipError):
             "'{name}' is not installed".format(name=name))
 
 
-class DockerComposeError(DipError):
+class DockerComposeProjectError(DipError):
+    """ No docker-compose.yml for CLI in config. """
+    def __init__(self, path):
+        super(DockerComposeProjectError, self).__init__(
+            "No docker-compose.yml definition found in {path}"
+            .format(path=path))
+
+
+class DockerComposeServiceError(DipError):
     """ No docker-compose.yml for CLI in config. """
     def __init__(self, name):
-        super(DockerComposeError, self).__init__(
+        super(DockerComposeServiceError, self).__init__(
             "No docker-compose.yml definition found for '{name}' command"
             .format(name=name))

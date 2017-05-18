@@ -50,6 +50,14 @@ def test_config_for_err(mock_read):
 
 
 @mock.patch('compose.cli.command.get_project')
+def test_compose_project(mock_proj):
+    proj = mock.MagicMock()
+    mock_proj.return_value = proj
+    with config.compose_project('/path/to/project') as svc:
+        mock_proj.assert_called_once_with('/path/to/project')
+
+
+@mock.patch('compose.cli.command.get_project')
 def test_compose_service(mock_proj):
     proj = mock.MagicMock()
     mock_proj.return_value = proj
@@ -61,7 +69,7 @@ def test_compose_service(mock_proj):
 @mock.patch('compose.cli.command.get_project')
 def test_compose_service_err(mock_proj):
     mock_proj.side_effect = compose.config.errors.ConfigurationError('err')
-    with pytest.raises(exc.DockerComposeError):
+    with pytest.raises(exc.DockerComposeServiceError):
         with config.compose_service('mysvc', '/path/to/project') as svc:
             pass
 

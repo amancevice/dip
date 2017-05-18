@@ -39,13 +39,22 @@ def config_for(name, path=None):
 
 
 @contextlib.contextmanager
+def compose_project(*args, **kwargs):
+    try:
+        proj = command.get_project(*args, **kwargs)
+        yield proj
+    except compose.config.errors.ConfigurationError:
+        raise exc.DockerComposeProjectError(*args)
+
+
+@contextlib.contextmanager
 def compose_service(name, *args, **kwargs):
     try:
         proj = command.get_project(*args, **kwargs)
         svc = proj.get_service(name)
         yield svc
     except compose.config.errors.ConfigurationError:
-        raise exc.DockerComposeError(name)
+        raise exc.DockerComposeServiceError(name)
 
 
 def dict_merge(target, *args):

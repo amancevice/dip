@@ -154,7 +154,7 @@ def dip_pull(all_opt, name):
             try:
                 with config.compose_service(cliname, clicfg['home']) as svc:
                     svc.pull()
-            except exc.DockerComposeError as err:
+            except exc.DockerComposeServiceError as err:
                 click.echo(err, err=True)
 
 
@@ -188,6 +188,13 @@ def dip_reinstall(all_opt, name):
 def dip_uninstall(name):
     """ Uninstall CLI by name. """
     with config.config_for(name) as cfg:
+        # Bring down service networks
+        try:
+            with config.compose_project(cfg['home']) as proj:
+                proj.networks.remove()
+        except exc.DockerComposeProjectError:
+            pass
+
         # Remove executable
         cli.remove(name, cfg['path'])
 

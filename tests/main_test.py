@@ -109,7 +109,8 @@ def test_reinstall(mock_cli, mock_write):
 @mock.patch('dip.cli.remove')
 @mock.patch('dip.config.write')
 @mock.patch('dip.config.read')
-def test_uninstall(mock_read, mock_write, mock_remove):
+@mock.patch('dip.config.compose_project')
+def test_uninstall(mock_proj, mock_read, mock_write, mock_remove):
     with tempfile.NamedTemporaryFile() as tmp:
         path, tmpname = os.path.split(tmp.name)
         mock_read.return_value = {
