@@ -2,6 +2,8 @@
 dip CLI tool main entrypoint
 """
 import json
+import os
+import re
 import sys
 
 import click
@@ -11,6 +13,9 @@ from . import colors
 from . import config
 from . import exc
 from . import options
+from . import utils
+
+HOME = os.getenv('HOME')
 
 
 # pylint: disable=unused-argument
@@ -121,6 +126,25 @@ def dip_install(name, home, path, remote, env, secret):
     cname = colored.stylize(name, colors.TEAL)
     cpath = colored.stylize(path, colors.BLUE)
     click.echo(msg.format(name=cname, path=cpath))
+
+
+@dip.command('list')
+def dip_list():
+    """ List installed CLIs. """
+    with config.current() as cfg:
+        with utils.newlines(cfg['dips']):
+            pad = any(cfg['dips']) and max(len(x) for x in cfg['dips'])
+            for name, clicfg in sorted(cfg['dips'].items()):
+                name = colored.stylize(name.ljust(pad), colors.TEAL)
+                clicfg['home'] = re.sub(r"^{HOME}".format(HOME=HOME),
+                                        '~', clicfg['home'])
+                if clicfg.get('remote') and clicfg.get('branch'):
+                    tpl = "{name} {home} @ {remote}/{branch}"
+                elif clicfg.get('remote'):
+                    tpl = "{name} {home} @ {remote}"
+                else:
+                    tpl = "{name} {home}"
+                click.echo(tpl.format(name=name, **clicfg))
 
 
 @dip.command('pull')

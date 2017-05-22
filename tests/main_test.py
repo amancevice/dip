@@ -325,3 +325,30 @@ def test_env_err(mock_read):
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip_env, ['fizz'])
     assert result.exit_code == 1
+
+
+@mock.patch('dip.config.read')
+def test_list_no_dips(mock_read):
+    mock_read.return_value = {'dips': {}}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.dip_list)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+
+@mock.patch('dip.config.read')
+def test_list(mock_read):
+    mock_read.return_value = {'dips': {
+        'fizz': {'home': '/path/to/fizz'},
+        'buzz': {'home': '/path/to/buzz', 'remote': 'origin', 'branch': 'master'},
+        'jazz': {'home': '/path/to/jazz', 'remote': 'origin'},
+    }}
+    runner = click.testing.CliRunner()
+    result = runner.invoke(main.dip_list)
+    assert result.exit_code == 0
+    assert result.output == '''
+buzz /path/to/buzz @ origin/master
+fizz /path/to/fizz
+jazz /path/to/jazz @ origin
+
+'''
