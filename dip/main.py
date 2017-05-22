@@ -23,22 +23,6 @@ def dip():
     pass  # pragma: no cover
 
 
-@dip.command(name='help')
-@click.pass_context
-def dip_help(ctx):
-    """ Show this message. """
-    click.echo(ctx.parent.command.get_help(ctx.parent))
-
-
-@dip.command('show')
-@options.NAME
-def dip_show(name):
-    """ Show service configuration. """
-    with config.config_for(name) as cfg:
-        with config.compose_service(name, cfg['home']) as svc:
-            click.echo(json.dumps(svc.config_dict(), indent=4, sort_keys=True))
-
-
 # pylint: disable=invalid-name
 @dip.command('config')
 @options.GLOBAL
@@ -181,6 +165,15 @@ def dip_reinstall(all_opt, name):
             cname = colored.stylize(cliname, colored.fg('spring_green_1'))
             cpath = colored.stylize(clipath, colored.fg('blue'))
             click.echo(msg.format(name=cname, path=cpath))
+
+
+@dip.command('show')
+@options.NAME
+def dip_show(name):
+    """ Show service configuration. """
+    with config.config_for(name) as cfg:
+        with config.compose_service(name, cfg['home']) as svc:
+            click.echo(json.dumps(svc.config_dict(), indent=4, sort_keys=True))
 
 
 @dip.command('uninstall')

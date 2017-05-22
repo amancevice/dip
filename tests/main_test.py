@@ -33,13 +33,6 @@ def test_version():
     assert result.output == "dip, version {vsn}\n".format(vsn=dip.__version__)
 
 
-def test_help():
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.dip, ['help'])
-    assert result.exit_code == 0
-    assert result.output == runner.invoke(main.dip, ['--help']).output
-
-
 @mock.patch('dip.config.read')
 @mock.patch('compose.cli.command.get_project')
 def test_show(mock_get, mock_read):
