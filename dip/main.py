@@ -7,6 +7,7 @@ import sys
 import click
 import colored
 from . import cli
+from . import colors
 from . import config
 from . import exc
 from . import options
@@ -117,8 +118,8 @@ def dip_install(name, home, path, remote, env, secret):
 
     # Finish
     msg = "Installed {name} to {path}"
-    cname = colored.stylize(name, colored.fg('spring_green_1'))
-    cpath = colored.stylize(path, colored.fg('blue'))
+    cname = colored.stylize(name, colors.TEAL)
+    cpath = colored.stylize(path, colors.BLUE)
     click.echo(msg.format(name=cname, path=cpath))
 
 
@@ -162,8 +163,8 @@ def dip_reinstall(all_opt, name):
 
             # Show installation
             msg = "Reinstalled {name} to {path}"
-            cname = colored.stylize(cliname, colored.fg('spring_green_1'))
-            cpath = colored.stylize(clipath, colored.fg('blue'))
+            cname = colored.stylize(cliname, colors.TEAL)
+            cpath = colored.stylize(clipath, colors.BLUE)
             click.echo(msg.format(name=cname, path=cpath))
 
 
@@ -195,5 +196,5 @@ def dip_uninstall(name):
         config.uninstall(name)
 
         # Finish
-        cname = colored.stylize(name, colored.fg('red'))
+        cname = colored.stylize(name, colors.RED)
         click.echo("Uninstalled {name}".format(name=cname))
