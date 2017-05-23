@@ -83,14 +83,17 @@ def test_install_remote(mock_cli, mock_write):
             mock_write.assert_called_once_with(name, path)
 
 
+@mock.patch('dip.config.read')
 @mock.patch('dip.cli.write')
 @mock.patch('dip.config.write')
-def test_reinstall(mock_cli, mock_write):
+def test_reinstall(mock_cli, mock_write, mock_read):
     name = 'fizz'
     with tempfile.NamedTemporaryFile() as tmppath:
         with tempfile.NamedTemporaryFile() as tmphome:
             path, pathname = os.path.split(tmppath.name)
             home, homename = os.path.split(tmphome.name)
+            mock_read.return_value = {
+                'dips': {'fizz': {'home': home, 'path': path}}}
             runner = click.testing.CliRunner()
             result = runner.invoke(main.dip_reinstall, [name])
             assert result.exit_code == 0
@@ -104,6 +107,24 @@ def test_reinstall(mock_cli, mock_write):
 @mock.patch('dip.config.read')
 @mock.patch('dip.config.compose_project')
 def test_uninstall(mock_proj, mock_read, mock_write, mock_remove):
+    with tempfile.NamedTemporaryFile() as tmp:
+        path, tmpname = os.path.split(tmp.name)
+        mock_read.return_value = {
+            'path': path,
+            'dips': {
+                'fizz': {
+                    'home': '/path/to/fizz',
+                    'path': path}}}
+        runner = click.testing.CliRunner()
+        result = runner.invoke(main.dip_uninstall, ['fizz'])
+        assert result.exit_code == 0
+        mock_remove.assert_called_once_with('fizz', path)
+
+
+@mock.patch('dip.cli.remove')
+@mock.patch('dip.config.write')
+@mock.patch('dip.config.read')
+def test_uninstall_no_network(mock_read, mock_write, mock_remove):
     with tempfile.NamedTemporaryFile() as tmp:
         path, tmpname = os.path.split(tmp.name)
         mock_read.return_value = {

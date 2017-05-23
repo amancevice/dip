@@ -53,8 +53,14 @@ def test_config_for_err(mock_read):
 def test_compose_project(mock_proj):
     proj = mock.MagicMock()
     mock_proj.return_value = proj
-    with config.compose_project('/path/to/project') as svc:
+    with config.compose_project('/path/to/project') as proj:
         mock_proj.assert_called_once_with('/path/to/project')
+
+
+def test_compose_project_err():
+    with pytest.raises(exc.DockerComposeProjectError):
+        with config.compose_project('/path/to/project') as proj:
+            pass
 
 
 @mock.patch('compose.cli.command.get_project')
