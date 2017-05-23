@@ -6,6 +6,7 @@ import compose
 import mock
 import pytest
 from dip import config
+from dip import defaults
 from dip import exc
 
 
@@ -180,7 +181,7 @@ def test_write(mock_update, mock_save, mock_read):
     mock_read.return_value = exp
     config.write(exp)
     mock_update.assert_called_once_with(exp)
-    mock_save.assert_called_once_with(config.PATH, sort_keys=True)
+    mock_save.assert_called_once_with(defaults.HOME, sort_keys=True)
 
 
 def test_write_err():
@@ -205,7 +206,7 @@ def test_read(mock_from_file):
 def test_read_oserr(mock_from_file):
     mock_from_file.side_effect = OSError
     ret = config.read()
-    exp = config.DEFAULT
+    exp = defaults.CONFIG
     assert ret == exp
 
 

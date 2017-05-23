@@ -7,7 +7,7 @@ import tempfile
 import click.testing
 import dip
 import mock
-from dip import config
+from dip import defaults
 from dip import main
 
 
@@ -149,29 +149,29 @@ def test_uninstall_err(mock_remove):
 
 @mock.patch('dip.config.read')
 def test_config(mock_read):
-    mock_read.return_value = config.DEFAULT
+    mock_read.return_value = defaults.CONFIG
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip_config)
     assert result.exit_code == 0
-    assert result.output == json.dumps(config.DEFAULT,
+    assert result.output == json.dumps(defaults.CONFIG,
                                        sort_keys=True,
                                        indent=4) + '\n'
 
 
 @mock.patch('dip.config.read')
 def test_config_naked(mock_read):
-    mock_read.return_value = config.DEFAULT
+    mock_read.return_value = defaults.CONFIG
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip_config)
     assert result.exit_code == 0
-    assert result.output == json.dumps(config.DEFAULT,
+    assert result.output == json.dumps(defaults.CONFIG,
                                        sort_keys=True,
                                        indent=4) + '\n'
 
 
 @mock.patch('dip.config.read')
 def test_config_global_path(mock_read):
-    mock_read.return_value = config.DEFAULT
+    mock_read.return_value = defaults.CONFIG
     runner = click.testing.CliRunner()
     result = runner.invoke(main.dip_config, ['--global', 'path'])
     assert result.exit_code == 0

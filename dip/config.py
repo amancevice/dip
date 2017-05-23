@@ -8,18 +8,10 @@ from copy import deepcopy
 
 import compose
 import easysettings
-import pkg_resources as pkg
 from compose.cli import command
 from . import __version__
+from . import defaults
 from . import exc
-
-PATH = pkg.resource_filename(pkg.Requirement.parse('dip'), 'dip/config.json')
-DEFAULT = {
-    'dips': {},
-    'home': PATH,
-    'path': '/usr/local/bin',
-    'version': __version__
-}
 
 
 @contextlib.contextmanager
@@ -93,16 +85,16 @@ def install(name, home, path, remote, env, cfgpath=None):
         write(cfg, cfgpath)
 
 
-def read(path=None):
+def read(home=None):
     """ Get dip config dict. """
-    path = path or PATH
+    home = home or defaults.HOME
     # Read config.json
     try:
-        cfg = dict(easysettings.JSONSettings.from_file(path))
-        return dict_merge(deepcopy(DEFAULT), cfg)
+        cfg = dict(easysettings.JSONSettings.from_file(home))
+        return dict_merge(deepcopy(defaults.CONFIG), cfg)
     # Write default if none exists or is bad JSON
     except (OSError, IOError, ValueError):
-        return DEFAULT
+        return defaults.CONFIG
 
 
 def set_config(cfg, keys, value):
@@ -151,14 +143,14 @@ def uninstall(name, path=None):
             sys.exit(1)
 
 
-def write(config=None, path=None):
+def write(config=None, home=None):
     """ Write default config to path. """
-    path = path or PATH
-    config = config or DEFAULT
+    home = home or defaults.HOME
+    config = config or defaults.CONFIG
     try:
         cfg = easysettings.JSONSettings()
         cfg.update(config)
         cfg['version'] = __version__
-        cfg.save(path, sort_keys=True)
+        cfg.save(home, sort_keys=True)
     except (OSError, IOError):
-        raise exc.DipConfigError(path)
+        raise exc.DipConfigError(home)
