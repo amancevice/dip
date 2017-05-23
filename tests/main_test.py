@@ -307,48 +307,6 @@ def test_pull_all(mock_get, mock_read):
 
 
 @mock.patch('dip.config.read')
-def test_env(mock_read):
-    mock_read.return_value = {
-        'dips': {
-            'fizz': {
-                'env': {
-                    'FIZZ': 'BUZZ',
-                    'FUZZ': 'JAZZ'
-                }
-            }
-        }
-    }
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.dip_env, ['fizz'])
-    assert result.exit_code == 0
-    assert result.output in ['-e FIZZ=BUZZ -e FUZZ=JAZZ\n',
-                             '-e FUZZ=JAZZ -e FIZZ=BUZZ\n']
-
-
-@mock.patch('dip.config.read')
-def test_env_no_env(mock_read):
-    mock_read.return_value = {
-        'dips': {
-            'fizz': {
-                'env': {}
-            }
-        }
-    }
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.dip_env, ['fizz'])
-    assert result.exit_code == 0
-    assert result.output == ''
-
-
-@mock.patch('dip.config.read')
-def test_env_err(mock_read):
-    mock_read.return_value = {'dips': {}}
-    runner = click.testing.CliRunner()
-    result = runner.invoke(main.dip_env, ['fizz'])
-    assert result.exit_code == 1
-
-
-@mock.patch('dip.config.read')
 def test_list_no_dips(mock_read):
     mock_read.return_value = {'dips': {}}
     runner = click.testing.CliRunner()

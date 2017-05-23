@@ -81,20 +81,6 @@ def dip_config(gbl, rm, cfg_set, name, keys):
                 sys.exit(1)
 
 
-@dip.command('env')
-@options.NAME
-def dip_env(name):
-    """ Show docker-compose ENV flags. """
-    with config.current() as cfg:
-        try:
-            env = cfg['dips'][name]['env']
-            if env:
-                cmd = ['='.join(x) for x in env.items()]
-                click.echo('-e ' + ' -e '.join(cmd))
-        except KeyError:
-            sys.exit(1)
-
-
 # pylint: disable=too-many-arguments
 @dip.command('install')
 @options.NAME
