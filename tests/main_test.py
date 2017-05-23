@@ -49,7 +49,7 @@ def test_show(mock_get, mock_read):
                                            sort_keys=True) + '\n'
 
 
-@mock.patch('dip.cli.write')
+@mock.patch('dip.shell.write')
 @mock.patch('dip.config.write')
 def test_install(mock_cli, mock_write):
     name = 'fizz'
@@ -65,7 +65,7 @@ def test_install(mock_cli, mock_write):
             mock_write.assert_called_once_with(name, path)
 
 
-@mock.patch('dip.cli.write')
+@mock.patch('dip.shell.write')
 @mock.patch('dip.config.write')
 def test_install_remote(mock_cli, mock_write):
     name = 'fizz'
@@ -84,7 +84,7 @@ def test_install_remote(mock_cli, mock_write):
 
 
 @mock.patch('dip.config.read')
-@mock.patch('dip.cli.write')
+@mock.patch('dip.shell.write')
 @mock.patch('dip.config.write')
 def test_reinstall(mock_cli, mock_write, mock_read):
     name = 'fizz'
@@ -102,7 +102,7 @@ def test_reinstall(mock_cli, mock_write, mock_read):
             mock_write.assert_called_once_with(name, path)
 
 
-@mock.patch('dip.cli.remove')
+@mock.patch('dip.shell.remove')
 @mock.patch('dip.config.write')
 @mock.patch('dip.config.read')
 @mock.patch('dip.config.compose_project')
@@ -121,7 +121,7 @@ def test_uninstall(mock_proj, mock_read, mock_write, mock_remove):
         mock_remove.assert_called_once_with('fizz', path)
 
 
-@mock.patch('dip.cli.remove')
+@mock.patch('dip.shell.remove')
 @mock.patch('dip.config.write')
 @mock.patch('dip.config.read')
 def test_uninstall_no_network(mock_read, mock_write, mock_remove):

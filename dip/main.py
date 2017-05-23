@@ -8,11 +8,11 @@ import sys
 
 import click
 import colored
-from . import cli
 from . import colors
 from . import config
 from . import exc
 from . import options
+from . import shell
 from . import utils
 
 HOME = os.getenv('HOME')
@@ -116,7 +116,7 @@ def dip_install(name, home, path, remote, env, secret):
         env[sec] = click.prompt(sec, hide_input=True)  # pragma: no cover
 
     # Write executable
-    cli.write(name, path)
+    shell.write(name, path)
 
     # Update config
     config.install(name, home, path, remote, env)
@@ -183,7 +183,7 @@ def dip_reinstall(all_opt, name):
             clipath = clicfg['path']
 
             # Write executable
-            cli.write(cliname, clipath)
+            shell.write(cliname, clipath)
 
             # Show installation
             msg = "Reinstalled {name} to {path}"
@@ -214,7 +214,7 @@ def dip_uninstall(name):
             pass
 
         # Remove executable
-        cli.remove(name, cfg['path'])
+        shell.remove(name, cfg['path'])
 
         # Update config
         config.uninstall(name)
