@@ -7,7 +7,6 @@ import re
 import sys
 
 import click
-import colored
 from . import colors
 from . import config
 from . import exc
@@ -109,9 +108,7 @@ def dip_install(name, home, path, remote, env, secret):
 
     # Finish
     msg = "Installed {name} to {path}"
-    cname = colored.stylize(name, colors.TEAL)
-    cpath = colored.stylize(path, colors.BLUE)
-    click.echo(msg.format(name=cname, path=cpath))
+    click.echo(msg.format(name=colors.teal(name), path=colors.blue(path)))
 
 
 @dip.command('list')
@@ -121,7 +118,7 @@ def dip_list():
         with utils.newlines(cfg['dips']):
             pad = any(cfg['dips']) and max(len(x) for x in cfg['dips'])
             for name, clicfg in sorted(cfg['dips'].items()):
-                name = colored.stylize(name.ljust(pad), colors.TEAL)
+                name = colors.teal(name.ljust(pad))
                 clicfg['home'] = re.sub(r"^{HOME}".format(HOME=HOME),
                                         '~', clicfg['home'])
                 if clicfg.get('remote') and clicfg.get('branch'):
@@ -172,10 +169,9 @@ def dip_reinstall(all_opt, name):
             shell.write(cliname, clipath)
 
             # Show installation
-            msg = "Reinstalled {name} to {path}"
-            cname = colored.stylize(cliname, colors.TEAL)
-            cpath = colored.stylize(clipath, colors.BLUE)
-            click.echo(msg.format(name=cname, path=cpath))
+            msg = "Reinstalled {name} to {path}"\
+                  .format(name=colors.teal(cliname), path=colors.blue(clipath))
+            click.echo(msg)
 
 
 @dip.command('show')
@@ -206,5 +202,4 @@ def dip_uninstall(name):
         config.uninstall(name)
 
         # Finish
-        cname = colored.stylize(name, colors.RED)
-        click.echo("Uninstalled {name}".format(name=cname))
+        click.echo("Uninstalled {name}".format(name=colors.red(name)))
