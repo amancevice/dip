@@ -3,6 +3,7 @@ Utilities.
 """
 import contextlib
 import os
+import re
 from copy import deepcopy
 
 import click
@@ -10,14 +11,20 @@ import pkg_resources
 
 
 @contextlib.contextmanager
-def newlines(iterable):
+def newlines(echo=True):
     """ Helper to wrap output in newlines. """
-    empty = not any(iterable)
-    if not empty:
+    if echo:
         click.echo()
     yield
-    if not empty:
+    if echo:
         click.echo()
+
+
+def abspath(filename):
+    """ Helper to return abspath of dip file. """
+    path = os.path.join(__package__, filename)
+    root = pkg_resources.Requirement.parse(__package__)
+    return pkg_resources.resource_filename(root, path)
 
 
 def dict_merge(target, *args):
@@ -45,8 +52,12 @@ def flatten(items):
     return [y for x in items for y in x]
 
 
-def abspath(*path):
-    """ Helper to return abspath of dip file. """
-    path = os.path.join(*path)
-    root = pkg_resources.Requirement.parse(__package__)
-    return pkg_resources.resource_filename(root, path)
+def lreplace(search, replace, string):
+    """ Left-replace. """
+    return re.sub(r"^{search}".format(search=search), replace, string)
+
+
+def write_exe(path, name):
+    """ Write executable to path. """
+    with open(os.path.join(path, name), 'w') as exe:
+        exe.write("#!/bin/bash\ndip run {name} -- $*\n".format(name=name))

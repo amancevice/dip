@@ -6,13 +6,6 @@ import pytest
 from dip import options
 
 
-def test_validate_all_or_name():
-    mock_ctx = mock.MagicMock()
-    mock_ctx.params = {'all_opt': True}
-    with pytest.raises(click.BadOptionUsage):
-        options.validate_all_or_name(mock_ctx, mock.MagicMock(), 'fizz')
-
-
 def test_validate_env():
     ret = options.validate_env(mock.MagicMock(),
                                mock.MagicMock(),

@@ -1,236 +1,146 @@
+import collections
 import contextlib
-import json
-import pkg_resources as pkg
+import tempfile
+from copy import deepcopy
 
-import compose
 import mock
 import pytest
 from dip import config
-from dip import defaults
 from dip import exc
+from . import CONFIG
 
 
-@mock.patch('dip.config.read')
-def test_current(mock_read):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    with config.current() as ret:
-        assert ret == exp
+@contextlib.contextmanager
+def tempcfg():
+    yield config.DipConfig(**deepcopy(CONFIG.config))
 
 
-@mock.patch('dip.config.read')
-def test_config_for(mock_read):
-    exp = {
-        'dips': {'test': {'home': '/tmp', 'path': '/bin'}},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    with config.config_for('test') as ret:
-        assert ret == exp['dips']['test']
+@mock.patch('easysettings.JSONSettings.from_file')
+def test_load_err(mock_file):
+    mock_file.side_effect = IOError
+    assert dict(config.load()) == {}
 
 
-@mock.patch('dip.config.read')
-def test_config_for_err(mock_read):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    with pytest.raises(exc.CliNotInstalled):
-        with config.config_for('test') as ret:
-            pass
+def test_DipConfig_str():
+    home = '/path/to/dip/config.json'
+    assert str(config.DipConfig(home=home)) == home
 
 
-@mock.patch('compose.cli.command.get_project')
-def test_compose_project(mock_proj):
-    proj = mock.MagicMock()
-    mock_proj.return_value = proj
-    with config.compose_project('/path/to/project') as proj:
-        mock_proj.assert_called_once_with('/path/to/project')
+def test_DipConfig_repr():
+    home = '/path/to/dip/config.json'
+    assert repr(config.DipConfig(home=home)) == \
+        "DipConfig({home})".format(home=home)
 
 
-def test_compose_project_err():
-    with pytest.raises(exc.DockerComposeProjectError):
-        with config.compose_project('/path/to/project') as proj:
-            pass
+def test_DipConfig_del():
+    with tempcfg() as cfg:
+        del cfg['fizz']
+        assert 'fizz' not in cfg.config['dips']
 
 
-@mock.patch('compose.cli.command.get_project')
-def test_compose_service(mock_proj):
-    proj = mock.MagicMock()
-    mock_proj.return_value = proj
-    with config.compose_service('mysvc', '/path/to/project') as svc:
-        mock_proj.assert_called_once_with('/path/to/project')
-        proj.get_service.assert_called_once_with('mysvc')
+def test_DipConfig_set():
+    with tempcfg() as cfg:
+        cfg['foo'] = {'fizz': 'buzz'}
+        assert 'foo' in cfg.config['dips']
 
 
-@mock.patch('compose.cli.command.get_project')
-def test_compose_service_err(mock_proj):
-    mock_proj.side_effect = compose.config.errors.ConfigurationError('err')
-    with pytest.raises(exc.DockerComposeServiceError):
-        with config.compose_service('mysvc', '/path/to/project') as svc:
-            pass
+@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Dip')
+@mock.patch('dip.utils.write_exe')
+def test_DipConfig_install(mock_exe, mock_dip, mock_save):
+    with tempcfg() as cfg:
+        cfg.install('test',
+                    '/path/to/test',
+                    '/path/to/bin',
+                    {'FIZZ': 'BUZZ'},
+                    'origin/master')
+        mock_dip.assert_called_once_with('test',
+                                         '/path/to/test',
+                                         '/path/to/bin',
+                                         {'FIZZ': 'BUZZ'},
+                                         'origin',
+                                         'master')
+        mock_exe.assert_called_once_with('/path/to/bin', 'test')
 
 
-@mock.patch('dip.config.write')
-@mock.patch('dip.config.read')
-def test_install(mock_read, mock_write):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    config.install('test', '/home', '/path', None, {})
-    mock_write.assert_called_once_with({
-        'dips': {
-            'test': {
-                'home': '/home',
-                'path': '/path',
-                'remote': None,
-                'branch': None,
-                'env': {}
-            }
-        },
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }, None)
+@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Dip')
+@mock.patch('dip.utils.write_exe')
+def test_DipConfig_install_no_branch(mock_exe, mock_dip, mock_save):
+    with tempcfg() as cfg:
+        cfg.install('test',
+                    '/path/to/test',
+                    '/path/to/bin',
+                    {'FIZZ': 'BUZZ'},
+                    'origin')
+        mock_dip.assert_called_once_with('test',
+                                         '/path/to/test',
+                                         '/path/to/bin',
+                                         {'FIZZ': 'BUZZ'},
+                                         'origin',
+                                         None)
+        mock_exe.assert_called_once_with('/path/to/bin', 'test')
 
 
-@mock.patch('dip.config.write')
-@mock.patch('dip.config.read')
-def test_install_remote(mock_read, mock_write):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    config.install('test', '/home', '/path', 'origin', {})
-    mock_write.assert_called_once_with({
-        'dips': {
-            'test': {
-                'home': '/home',
-                'path': '/path',
-                'remote': 'origin',
-                'branch': None,
-                'env': {}
-            }
-        },
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }, None)
-
-
-@mock.patch('dip.config.write')
-@mock.patch('dip.config.read')
-def test_uninstall(mock_read, mock_write):
-    exp = {
-        'dips': {'test': {'home': '/home', 'path': '/path'}},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    config.uninstall('test')
-    mock_write.assert_called_once_with({
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }, None)
-
-
-@mock.patch('dip.config.read')
-@mock.patch('sys.exit')
-def test_uninstall_err(mock_exit, mock_read):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    config.uninstall('test')
-    mock_exit.assert_called_once_with(1)
-
-
-@mock.patch('dip.config.read')
 @mock.patch('easysettings.JSONSettings.save')
-@mock.patch('easysettings.JSONSettings.update')
-def test_write(mock_update, mock_save, mock_read):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_read.return_value = exp
-    config.write(exp)
-    mock_update.assert_called_once_with(exp)
-    mock_save.assert_called_once_with(defaults.HOME, sort_keys=True)
-
-
-def test_write_err():
+def test_DipConfig_save_err(mock_save):
+    mock_save.side_effect = IOError
     with pytest.raises(exc.DipConfigError):
-        config.write({'path': '/path', 'dips': {}}, '/dip')
+        CONFIG.save()
 
 
-@mock.patch('easysettings.JSONSettings.from_file')
-def test_read(mock_from_file):
-    exp = {
-        'dips': {},
-        'home': '/home',
-        'path': '/fizz/buzz',
-        'version': '0.0.0'
-    }
-    mock_from_file.return_value = exp
-    ret = config.read()
-    assert ret == exp
+@mock.patch('dip.config.DipConfig.save')
+def test_DipConfig_uninstall(mock_save):
+    with tempcfg() as cfg:
+        cfg.uninstall('fizz')
+        assert 'fizz' not in cfg.config['dips']
 
 
-@mock.patch('easysettings.JSONSettings.from_file')
-def test_read_oserr(mock_from_file):
-    mock_from_file.side_effect = OSError
-    ret = config.read()
-    exp = defaults.CONFIG
-    assert ret == exp
+def test_Dip_str():
+    assert str(config.Dip('fizz', '/path/to/fizz', '/bin')) == 'fizz'
 
 
-def test_dict_merge():
-    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
-    dict2 = {'fizz': {'buzz': {'jazz': 'junk', 'riff': 'raff'}}}
-    dict3 = {'buzz': 'fizz'}
-    ret = config.dict_merge(dict1, dict2, dict3)
-    exp = {
-        'fizz': {
-            'buzz': {
-                'jazz': 'junk',
-                'riff': 'raff',
-                'hub': 'bub'
-            }
-        },
-        'buzz': 'fizz'
-    }
-    assert ret == exp
+def test_Dip_repr():
+    assert repr(config.Dip('fizz', '/path/to/fizz', '/bin')) == 'Dip(fizz)'
 
 
-def test_dict_merge_nondict():
-    dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
-    dict2 = 42
-    ret = config.dict_merge(dict1, dict2)
-    exp = 42
-    assert ret == exp
+@mock.patch('compose.config.config.get_default_config_files')
+def test_Dip_definition(mock_cfg):
+    with tempfile.NamedTemporaryFile() as tmp:
+        mock_cfg.return_value = [tmp.name]
+        tmp.write('SAMPLE'.encode('utf-8'))
+        tmp.flush()
+        dip = config.Dip('fizz', '/path/to/fizz', '/bin')
+        assert dip.definition == 'SAMPLE'
+
+
+@mock.patch('git.Repo')
+@mock.patch('compose.config.config.get_default_config_files')
+@mock.patch('subprocess.check_output')
+@mock.patch('subprocess.call')
+@mock.patch('time.sleep')
+def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg, mock_repo):
+    mock_repo.working_dir = '/path/to/git'
+    mock_cfg.return_value = ['/path/to/fizz/docker-compose.yml']
+    mock_check.return_value = 'DIFF'
+    dip = config.Dip('fizz', '/path/to/fizz', '/bin', {}, 'origin', 'master')
+    dip.diff()
+    mock_call.assert_called_once_with([
+        'git', '--no-pager', 'diff',
+        'origin/master:path/to/fizz/docker-compose.yml',
+        '/path/to/fizz/docker-compose.yml'])
+
+
+@mock.patch('subprocess.check_output')
+@mock.patch('os.execv')
+def test_Dip_run(mock_exec, mock_subp):
+    env = collections.OrderedDict([('FIZZ', 'BUZZ'), ('JAZZ', 'FUNK')])
+    dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
+    mock_subp.return_value = '/bin/docker-compose'
+    dip.run()
+    mock_exec.assert_called_once_with(
+        '/bin/docker-compose',
+        ['docker-compose', 'run', '--rm',
+         '-e', 'FIZZ=BUZZ',
+         '-e', 'JAZZ=FUNK',
+         'fizz'])
