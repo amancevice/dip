@@ -6,7 +6,7 @@ import re
 
 import click
 from . import __version__
-from . import config
+from . import defaults
 
 
 def validate_all_or_name(ctx, param, value):
@@ -100,7 +100,7 @@ class Name(click.types.StringParamType):
     name = 'NAME'
 
 
-CONFIG = config.read()
+ARGS = click.argument('ARGS', nargs=-1, type=Path())
 HOME = click.argument('HOME', callback=expand_home, default='.', type=Path())
 KEYS = click.argument('KEYS', is_eager=True, nargs=-1)
 NAME = click.argument('NAME', type=Name())
@@ -129,9 +129,9 @@ SECRET = click.option('-x', '--secret',
                       multiple=True,
                       type=Env())
 PATH_OPT = click.option('-p', '--path',
-                        default=CONFIG['path'],
+                        default=defaults.PATH,
                         help="Path to write executable [default: {}]"
-                             .format(CONFIG['path']),
+                             .format(defaults.PATH),
                         type=Path())
 ALL_OPT = click.option('-a', '--all', 'all_opt',
                        callback=validate_all_or_name,
