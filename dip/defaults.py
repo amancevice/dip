@@ -1,11 +1,12 @@
 """
 Default values.
 """
-import pkg_resources as pkg
 from . import __version__
+from . import utils
 
 PATH = u'/usr/local/bin'
-HOME = pkg.resource_filename(pkg.Requirement.parse('dip'), u'dip/config.json')
+HOME = utils.abspath(__package__, 'config.json')
+TEMPLATE = utils.abspath(__package__, 'template.sh')
 CONFIG = {u'dips': {},
           u'home': HOME,
           u'path': PATH,

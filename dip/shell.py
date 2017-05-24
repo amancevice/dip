@@ -3,15 +3,13 @@ Helper for file IO.
 """
 import os
 
-import pkg_resources as pkg
+from . import defaults
 from . import exc
 
 
 def template(name):
     """ Read the CLI template script. """
-    path = pkg.resource_filename(pkg.Requirement.parse('dip'),
-                                 'dip/template.sh')
-    with open(path, 'r') as temp:
+    with open(defaults.TEMPLATE, 'r') as temp:
         return temp.read().replace('%%name%%', name)
 
 
