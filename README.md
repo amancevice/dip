@@ -145,7 +145,7 @@ The default configuration can be viewed using the `dip config` command:
 {
     "path": "/usr/local/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.2.3",
+    "version": "0.4.0",
     "dips": {},
 }
 ```
@@ -171,7 +171,7 @@ $ dip config
 {
     "path": "/path/to/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.2.3",
+    "version": "0.4.0",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
