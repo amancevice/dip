@@ -74,6 +74,7 @@ ARGS = click.argument('ARGS', nargs=-1)
 HOME = click.argument('HOME', callback=expand_home, default='.', type=Path())
 KEYS = click.argument('KEYS', is_eager=True, nargs=-1)
 NAME = click.argument('NAME', type=Name())
+NAMES = click.argument('NAMES', nargs=-1, type=Name())
 PATH = click.argument('PATH', type=Path())
 ENV = click.option('-e', '--env',
                    callback=validate_env,

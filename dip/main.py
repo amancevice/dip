@@ -147,13 +147,14 @@ def dip_show(ctx, name):
 
 
 @dip.command('uninstall')
-@options.NAME
+@options.NAMES
 @click.pass_context
-def dip_uninstall(ctx, name):
+def dip_uninstall(ctx, names):
     """ Uninstall CLI by name. """
-    with contexts.lazy_load(ctx, name):
-        # Uninstall
-        ctx.obj.uninstall(name)
+    for name in names:
+        with contexts.lazy_load(ctx, name):
+            # Uninstall
+            ctx.obj.uninstall(name)
 
-        # Finish
-        click.echo("Uninstalled {name}".format(name=colors.red(name)))
+            # Finish
+            click.echo("Uninstalled {name}".format(name=colors.red(name)))
