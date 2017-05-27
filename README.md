@@ -13,12 +13,6 @@ Install CLIs using docker-compose.
 pip install dip
 ```
 
-Installed CLIs also depend on the `realpath` command, which can be installed on macOS with
-
-```bash
-brew install coreutils
-```
-
 ## Simple Usage
 
 1. Write a CLI in whatever language you choose
