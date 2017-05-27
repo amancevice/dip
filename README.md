@@ -152,7 +152,6 @@ $ dip config --global path
 ```
 
 ```bash
-$ dip config --global path --set /path/to/bin
 $ dip config --global path
 /path/to/bin
 ```
