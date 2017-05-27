@@ -91,8 +91,8 @@ services:
     image: amancevice/dipex
     build: .
     environment:
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
     volumes:
       - ~/.aws:/root/.aws
 ```
@@ -114,7 +114,7 @@ dip install dipex --remote origin/master
 If you are not currently inside the directory where your `docker-compose.yml` file is, you may supply it as a positional argument:
 
 ```bash
-dip install dipex /path/to/docker-compose-dir [--remote origin/master]
+dip install dipex /path/to/project [--remote origin/master]
 ```
 
 ### Using the CLI
@@ -160,7 +160,7 @@ $ dip config --global path
 After an item is installed it will appear in the `dips` key:
 
 ```bash
-$ dip install dipex /path/to/docker-compose-dir
+$ dip install dipex /path/to/project
 $ dip config
 {
     "path": "/path/to/bin",
@@ -181,7 +181,7 @@ $ dip config
 Use the `--path` option when installing/uninstalling to override the default path & use a custom one:
 
 ```bash
-$ dip install --path /my/bin dipex /path/to/docker-compose-dir
+$ dip install --path /my/bin dipex /path/to/project
 $ dip config
 {
     "path": "/path/to/bin",
@@ -204,7 +204,7 @@ Use `dip config NAME` to display the configuration of an installed CLI:
 ```bash
 $ dip config dipex
 {
-    "home": "/path/to/docker-compose-dir",
+    "home": "/path/to/project",
     "path": "/my/bin",
     "remote": null,
     "branch": null,
@@ -216,7 +216,7 @@ Use `dip config NAME KEY` to display a given configuration item
 
 ```bash
 $ dip config dipex home
-/path/to/docker-compose-dir
+/path/to/project
 
 # Handy trick...
 $ cd $(dip config dipex home)
