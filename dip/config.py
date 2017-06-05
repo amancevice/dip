@@ -80,7 +80,11 @@ class DipConfig(collections.MutableMapping):
         self.save()
 
         # Write executable
-        utils.write_exe(path, name)
+        try:
+            utils.write_exe(path, name)
+        except (OSError, IOError):
+            raise exc.DipError(
+                "Could not write executable for '{name}'".format(name=name))
 
     def save(self):
         """ Save config to config.json file. """

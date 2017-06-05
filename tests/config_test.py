@@ -66,6 +66,20 @@ def test_DipConfig_install(mock_exe, mock_dip, mock_save):
 @mock.patch('dip.config.DipConfig.save')
 @mock.patch('dip.config.Dip')
 @mock.patch('dip.utils.write_exe')
+def test_DipConfig_install_err(mock_exe, mock_dip, mock_save):
+    with tempcfg() as cfg:
+        mock_exe.side_effect = OSError
+        with pytest.raises(exc.DipError):
+            cfg.install('test',
+                        '/path/to/test',
+                        '/path/to/bin',
+                        {'FIZZ': 'BUZZ'},
+                        'origin/master')
+
+
+@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Dip')
+@mock.patch('dip.utils.write_exe')
 def test_DipConfig_install_no_branch(mock_exe, mock_dip, mock_save):
     with tempcfg() as cfg:
         cfg.install('test',
