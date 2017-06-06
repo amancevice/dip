@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import time
+import sys
 from copy import deepcopy
 
 import click
@@ -168,10 +169,10 @@ class Dip(object):
 
     def run(self, *args):
         """ Run CLI. """
-        # /path/to/docker-compose
-        exe = subprocess.check_output(['which', 'docker-compose']).strip()
-
         # docker-compose run --rm <args> <svc> $*
         opts = utils.flatten(['-e', '='.join(x)] for x in self.env.items())
-        cmd = ['docker-compose', 'run', '--rm'] + opts + [self.name]
-        os.execv(exe, cmd + list(args))
+        if sys.stdin.isatty():
+            cmd = ['docker-compose', 'run', '--rm', '-T'] + opts + [self.name]
+        else:
+            cmd = ['docker-compose', 'run', '--rm'] + opts + [self.name]
+        os.execvp('docker-compose', cmd + list(args))

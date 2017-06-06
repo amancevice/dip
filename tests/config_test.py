@@ -145,16 +145,29 @@ def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg, mock_repo):
         '/path/to/fizz/docker-compose.yml'])
 
 
-@mock.patch('subprocess.check_output')
-@mock.patch('os.execv')
-def test_Dip_run(mock_exec, mock_subp):
+@mock.patch('os.execvp')
+def test_Dip_run(mock_exec):
     env = collections.OrderedDict([('FIZZ', 'BUZZ'), ('JAZZ', 'FUNK')])
     dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
-    mock_subp.return_value = '/bin/docker-compose'
     dip.run()
     mock_exec.assert_called_once_with(
-        '/bin/docker-compose',
+        'docker-compose',
         ['docker-compose', 'run', '--rm',
+         '-e', 'FIZZ=BUZZ',
+         '-e', 'JAZZ=FUNK',
+         'fizz'])
+
+
+@mock.patch('os.execvp')
+@mock.patch('sys.stdin.isatty')
+def test_Dip_run_tty(mock_tty, mock_exec):
+    mock_tty.return_value = True
+    env = collections.OrderedDict([('FIZZ', 'BUZZ'), ('JAZZ', 'FUNK')])
+    dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
+    dip.run()
+    mock_exec.assert_called_once_with(
+        'docker-compose',
+        ['docker-compose', 'run', '--rm', '-T',
          '-e', 'FIZZ=BUZZ',
          '-e', 'JAZZ=FUNK',
          'fizz'])
