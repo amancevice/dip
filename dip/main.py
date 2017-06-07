@@ -90,25 +90,26 @@ def dip_install(ctx, name, home, path, remote, env, secret):
 @click.pass_context
 def dip_list(ctx):
     """ List installed CLIs. """
-    with utils.newlines(any(ctx.obj)):
-        max_name = max(len(x) for x in ctx.obj)
-        max_home = max(len(ctx.obj[x].home) for x in ctx.obj)
-        for key in sorted(ctx.obj):
-            dip = ctx.obj[key]
-            name = colors.teal(dip.name.ljust(max_name))
-            home = colors.blue(dip.home.ljust(max_home))
-            remote = dip.remote
-            branch = dip.branch
-            if remote and branch:
-                tpl = "{name} {home} @ {remote}/{branch}"
-            elif remote:
-                tpl = "{name} {home} @ {remote}"
-            else:
-                tpl = "{name} {home}"
-            click.echo(tpl.format(name=name,
-                                  home=home,
-                                  remote=remote,
-                                  branch=branch))
+    if any(ctx.obj):
+        with utils.newlines(any(ctx.obj)):
+            max_name = max(len(x) for x in ctx.obj)
+            max_home = max(len(ctx.obj[x].home) for x in ctx.obj)
+            for key in sorted(ctx.obj):
+                dip = ctx.obj[key]
+                name = colors.teal(dip.name.ljust(max_name))
+                home = colors.blue(dip.home.ljust(max_home))
+                remote = dip.remote
+                branch = dip.branch
+                if remote and branch:
+                    tpl = "{name} {home} @ {remote}/{branch}"
+                elif remote:
+                    tpl = "{name} {home} @ {remote}"
+                else:
+                    tpl = "{name} {home}"
+                click.echo(tpl.format(name=name,
+                                      home=home,
+                                      remote=remote,
+                                      branch=branch))
 
 
 @dip.command('pull')
