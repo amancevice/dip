@@ -155,24 +155,34 @@ class Dip(object):
                              branch=branch,
                              rel=rel.strip('/'))
 
-            cmd = ['git', '--no-pager', 'diff', remote, local]
-            with open(os.devnull, 'w') as devnull:
-                if subprocess.check_output(cmd, stderr=devnull).strip():
+            # Echo diff
+            try:
+                cmd = ['git', '--no-pager', 'diff', remote, local]
+                with open(os.devnull, 'w') as devnull:
+                    diff = subprocess.check_output(cmd, stderr=devnull).strip()
+                if diff:
                     with utils.newlines():
                         msg = 'Local configuration has diverged from remote:\n'
                         click.echo(colors.amber(msg), err=True)
-                        subprocess.call(cmd)
+                        subprocess.call(cmd, stdout=sys.stderr)
                         msg = "\nSleeping for {sleep}s"\
                               .format(sleep=defaults.SLEEP)
                         click.echo(msg, err=True)
                     return time.sleep(defaults.SLEEP)
+            except subprocess.CalledProcessError:
+                click.echo(colors.amber("Could not access {remote}"
+                                        .format(remote=remote)), err=True)
 
     def run(self, *args):
         """ Run CLI. """
-        # docker-compose run --rm <args> <svc> $*
-        opts = utils.flatten(['-e', '='.join(x)] for x in self.env.items())
-        if sys.stdin.isatty():
-            cmd = ['docker-compose', 'run', '--rm', '-T'] + opts + [self.name]
-        else:
-            cmd = ['docker-compose', 'run', '--rm'] + opts + [self.name]
-        os.execvp('docker-compose', cmd + list(args))
+        # Build CMD
+        cmd = ['docker-compose', 'run', '--rm']
+        if utils.notty():
+            cmd.append('-T')
+
+        # Get options for docker-compose
+        cmd += utils.flatten(['-e', '='.join(x)] for x in self.env.items())
+
+        # Call docker-compose run --rm <args> <svc> $*
+        subprocess.call(cmd + [self.name] + list(args),
+                        stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin)

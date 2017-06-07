@@ -4,6 +4,8 @@ Utilities.
 import contextlib
 import os
 import re
+import stat
+import sys
 from copy import deepcopy
 
 import click
@@ -55,6 +57,17 @@ def flatten(items):
 def lreplace(search, replace, string):
     """ Left-replace. """
     return re.sub(r"^{search}".format(search=search), replace, string)
+
+
+def notty():
+    """ Helper to determine if TTY is needed. """
+    return not piped_redirected(sys.stdin) and piped_redirected(sys.stdout)
+
+
+def piped_redirected(stream):
+    """ Determine if stream is piped or redirected. """
+    mode = os.fstat(stream.fileno()).st_mode
+    return stat.S_ISFIFO(mode) or stat.S_ISREG(mode)
 
 
 def write_exe(path, name):

@@ -1,5 +1,7 @@
 import collections
 import contextlib
+import subprocess
+import sys
 import tempfile
 from copy import deepcopy
 
@@ -133,41 +135,81 @@ def test_Dip_definition(mock_cfg):
 @mock.patch('subprocess.check_output')
 @mock.patch('subprocess.call')
 @mock.patch('time.sleep')
-def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg, mock_repo):
+def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg,
+                  mock_repo):
+    with tempfile.NamedTemporaryFile() as tmp:
+        sys.stderr = tmp
+        mock_repo.working_dir = '/path/to/git'
+        mock_cfg.return_value = ['/path/to/fizz/docker-compose.yml']
+        mock_check.return_value = 'DIFF'
+        dip = config.Dip('fizz',
+                         '/path/to/fizz',
+                         '/bin',
+                         {},
+                         'origin',
+                         'master')
+        dip.diff()
+        mock_call.assert_called_once_with([
+            'git', '--no-pager', 'diff',
+            'origin/master:path/to/fizz/docker-compose.yml',
+            '/path/to/fizz/docker-compose.yml'], stdout=tmp)
+
+
+@mock.patch('git.Repo')
+@mock.patch('compose.config.config.get_default_config_files')
+@mock.patch('subprocess.check_output')
+@mock.patch('subprocess.call')
+def test_Dip_diff_err(mock_call, mock_check, mock_cfg, mock_repo):
     mock_repo.working_dir = '/path/to/git'
     mock_cfg.return_value = ['/path/to/fizz/docker-compose.yml']
-    mock_check.return_value = 'DIFF'
-    dip = config.Dip('fizz', '/path/to/fizz', '/bin', {}, 'origin', 'master')
+    mock_check.side_effect = subprocess.CalledProcessError(None, None)
+    dip = config.Dip('fizz',
+                     '/path/to/fizz',
+                     '/bin',
+                     {},
+                     'origin',
+                     'master')
     dip.diff()
-    mock_call.assert_called_once_with([
-        'git', '--no-pager', 'diff',
-        'origin/master:path/to/fizz/docker-compose.yml',
-        '/path/to/fizz/docker-compose.yml'])
+    mock_call.assert_not_called()
 
 
-@mock.patch('os.execvp')
-def test_Dip_run(mock_exec):
-    env = collections.OrderedDict([('FIZZ', 'BUZZ'), ('JAZZ', 'FUNK')])
-    dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
-    dip.run()
-    mock_exec.assert_called_once_with(
-        'docker-compose',
-        ['docker-compose', 'run', '--rm',
-         '-e', 'FIZZ=BUZZ',
-         '-e', 'JAZZ=FUNK',
-         'fizz'])
+@mock.patch('subprocess.call')
+@mock.patch('dip.utils.notty')
+def test_Dip_run(mock_tty, mock_call):
+    with tempfile.NamedTemporaryFile() as stdin:
+        with tempfile.NamedTemporaryFile() as stdout:
+            with tempfile.NamedTemporaryFile() as stderr:
+                sys.stdin = stdin
+                sys.stdout = stdout
+                sys.stderr = stderr
+                mock_tty.return_value = False
+                env = collections.OrderedDict([('FIZZ', 'BUZZ'),
+                                               ('JAZZ', 'FUNK')])
+                dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
+                dip.run()
+                mock_call.assert_called_once_with([
+                    'docker-compose', 'run', '--rm',
+                    '-e', 'FIZZ=BUZZ',
+                    '-e', 'JAZZ=FUNK',
+                    'fizz'], stdin=stdin, stdout=stdout, stderr=stderr)
 
 
-@mock.patch('os.execvp')
-@mock.patch('sys.stdin.isatty')
-def test_Dip_run_tty(mock_tty, mock_exec):
-    mock_tty.return_value = True
-    env = collections.OrderedDict([('FIZZ', 'BUZZ'), ('JAZZ', 'FUNK')])
-    dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
-    dip.run()
-    mock_exec.assert_called_once_with(
-        'docker-compose',
-        ['docker-compose', 'run', '--rm', '-T',
-         '-e', 'FIZZ=BUZZ',
-         '-e', 'JAZZ=FUNK',
-         'fizz'])
+@mock.patch('subprocess.call')
+@mock.patch('dip.utils.notty')
+def test_Dip_run_notty(mock_tty, mock_call):
+    with tempfile.NamedTemporaryFile() as stdin:
+        with tempfile.NamedTemporaryFile() as stdout:
+            with tempfile.NamedTemporaryFile() as stderr:
+                sys.stdin = stdin
+                sys.stdout = stdout
+                sys.stderr = stderr
+                mock_tty.return_value = True
+                env = collections.OrderedDict([('FIZZ', 'BUZZ'),
+                                               ('JAZZ', 'FUNK')])
+                dip = config.Dip('fizz', '/path/to/fizz', '/bin', env)
+                dip.run()
+                mock_call.assert_called_once_with([
+                    'docker-compose', 'run', '--rm', '-T',
+                    '-e', 'FIZZ=BUZZ',
+                    '-e', 'JAZZ=FUNK',
+                    'fizz'], stdin=stdin, stdout=stdout, stderr=stderr)
