@@ -58,7 +58,7 @@ def dip_config(ctx, gbl, keys):
 @dip.command('install')
 @options.NAME
 @options.HOME
-@options.PATH_OPT
+@options.PATH
 @options.REMOTE
 @options.ENV
 @options.SECRET
@@ -67,10 +67,9 @@ def dip_install(ctx, name, home, path, remote, env, secret):
     """ Install CLI by name.
 
         \b
-        dip install fizz                   # Default is current dir
-        dip install fizz .                 # Explicit path
-        dip install fizz /path/to/dir      # Absolute path
-        dip install fizz -r origin/master  # git remote/branch
+        dip install fizz .                   # Relative path
+        dip install fizz /path/to/dir        # Absolute path
+        dip install fizz . -r origin/master  # Tracking git remote/branch
     """
     # Interactively set ENV
     for sec in secret:

@@ -71,11 +71,10 @@ class Name(click.types.StringParamType):
 
 
 ARGS = click.argument('ARGS', nargs=-1)
-HOME = click.argument('HOME', callback=expand_home, default='.', type=Path())
+HOME = click.argument('HOME', callback=expand_home)
 KEYS = click.argument('KEYS', is_eager=True, nargs=-1)
 NAME = click.argument('NAME', type=Name())
 NAMES = click.argument('NAMES', nargs=-1, type=Name())
-PATH = click.argument('PATH', type=Path())
 ENV = click.option('-e', '--env',
                    callback=validate_env,
                    help='Optional ENV variable',
@@ -89,9 +88,9 @@ SECRET = click.option('-x', '--secret',
                       help='Set secret ENV',
                       multiple=True,
                       type=Env())
-PATH_OPT = click.option('-p', '--path',
-                        help='Path to write executable',
-                        type=Path())
+PATH = click.option('-p', '--path',
+                    help='Path to write executable',
+                    type=Path())
 REMOTE = click.option('-r', '--remote',
                       help='Optional git remote/branch',
                       type=Name())
