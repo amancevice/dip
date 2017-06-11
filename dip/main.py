@@ -121,7 +121,7 @@ def dip_pull(ctx, name):
             return dip.service.pull()
     except exc.DipError as err:
         click.echo(err, err=True)
-    except:
+    except Exception:
         click.echo("Could not pull '{name}' image".format(name=name), err=True)
     sys.exit(1)
 
