@@ -8,7 +8,7 @@ from copy import deepcopy
 import mock
 import pytest
 from dip import config
-from dip import exc
+from dip import errors
 from . import CONFIG
 
 
@@ -71,7 +71,7 @@ def test_DipConfig_install(mock_exe, mock_dip, mock_save):
 def test_DipConfig_install_err(mock_exe, mock_dip, mock_save):
     with tempcfg() as cfg:
         mock_exe.side_effect = OSError
-        with pytest.raises(exc.DipError):
+        with pytest.raises(errors.DipError):
             cfg.install('test',
                         '/path/to/test',
                         '/path/to/bin',
@@ -101,7 +101,7 @@ def test_DipConfig_install_no_branch(mock_exe, mock_dip, mock_save):
 @mock.patch('easysettings.JSONSettings.save')
 def test_DipConfig_save_err(mock_save):
     mock_save.side_effect = IOError
-    with pytest.raises(exc.DipConfigError):
+    with pytest.raises(errors.DipConfigError):
         CONFIG.save()
 
 

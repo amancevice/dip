@@ -5,7 +5,7 @@ from copy import deepcopy
 import click.testing
 import dip
 import mock
-from dip import exc
+from dip import errors
 from dip import main
 from . import CONFIG
 
@@ -97,7 +97,7 @@ def test_pull_err(mock_load):
 
 @mock.patch('dip.contexts.load')
 def test_pull_dip_err(mock_load):
-    mock_load.return_value.__enter__.side_effect = exc.DipError('FizzBuzz')
+    mock_load.return_value.__enter__.side_effect = errors.DipError('FizzBuzz')
     with invoke(main.dip_pull, ['fizz']) as result:
         assert result.exit_code == 1
 

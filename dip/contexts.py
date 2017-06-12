@@ -9,16 +9,16 @@ import compose
 import git
 from . import colors
 from . import config
-from . import exc
+from . import errors
 
 
 def verify_service(dip):
     try:
         dip.service
     except compose.config.errors.ComposeFileNotFound:
-        raise exc.ComposeFileNotFound(dip.name)
+        raise errors.ComposeFileNotFound(dip.name)
     except compose.project.NoSuchService:
-        raise exc.NoSuchService(dip.name)
+        raise errors.NoSuchService(dip.name)
 
 
 @contextlib.contextmanager
@@ -27,7 +27,7 @@ def lazy_load(ctx, name):
     try:
         yield ctx.obj[name]
     except KeyError:
-        raise exc.NotInstalledError(name)
+        raise errors.NotInstalledError(name)
 
 
 @contextlib.contextmanager

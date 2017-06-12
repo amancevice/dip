@@ -16,7 +16,7 @@ import git
 from . import __version__
 from . import colors
 from . import defaults
-from . import exc
+from . import errors
 from . import utils
 
 DEFAULT = {'dips': {},
@@ -84,7 +84,7 @@ class DipConfig(collections.MutableMapping):
         try:
             utils.write_exe(path, name)
         except (OSError, IOError):
-            raise exc.DipError(
+            raise errors.DipError(
                 "Could not write executable for '{name}'".format(name=name))
 
     def save(self):
@@ -94,7 +94,7 @@ class DipConfig(collections.MutableMapping):
             cfg.update(self.config)
             cfg.save(self.home, sort_keys=True)
         except (OSError, IOError):
-            raise exc.DipConfigError(self.home)
+            raise errors.DipConfigError(self.home)
 
     def uninstall(self, name):
         """ Uninstall config entry. """

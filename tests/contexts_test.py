@@ -3,7 +3,7 @@ import git
 import mock
 import pytest
 from dip import contexts
-from dip import exc
+from dip import errors
 from dip.config import Dip
 from . import CONFIG
 
@@ -17,14 +17,14 @@ def test_verify_service(mock_svc):
 @mock.patch('compose.cli.command.get_project')
 def test_verify_service_no_project(mock_proj):
     mock_proj.side_effect = compose.config.errors.ComposeFileNotFound([])
-    with pytest.raises(exc.ComposeFileNotFound):
+    with pytest.raises(errors.ComposeFileNotFound):
         contexts.verify_service(Dip('fizz', '/path/to/fizz', '/path/to/bin'))
 
 
 @mock.patch('dip.config.Dip.project')
 def test_verify_service_no_service(mock_proj):
     mock_proj.get_service.side_effect = compose.project.NoSuchService('fizz')
-    with pytest.raises(exc.NoSuchService):
+    with pytest.raises(errors.NoSuchService):
         contexts.verify_service(Dip('fizz', '/path/to/fizz', '/path/to/bin'))
 
 
@@ -39,7 +39,7 @@ def test_lazy_err(mock_get):
     mock_get.side_effect = KeyError
     mock_ctx = mock.MagicMock()
     mock_ctx.obj = CONFIG
-    with pytest.raises(exc.NotInstalledError):
+    with pytest.raises(errors.NotInstalledError):
         with contexts.lazy_load(mock_ctx, 'fizz'):
             pass
 

@@ -9,7 +9,7 @@ from . import __version__
 from . import contexts
 from . import colors
 from . import config
-from . import exc
+from . import errors
 from . import options
 from . import utils
 
@@ -119,7 +119,7 @@ def dip_pull(ctx, name):
     try:
         with contexts.load(ctx, name) as dip:
             return dip.service.pull()
-    except exc.DipError as err:
+    except errors.DipError as err:
         click.echo(err, err=True)
     except Exception:
         click.echo("Could not pull '{name}' image".format(name=name), err=True)
