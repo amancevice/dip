@@ -98,13 +98,27 @@ class DipConfig(collections.MutableMapping):
 
     def uninstall(self, name):
         """ Uninstall config entry. """
+        # Remove executable
+        try:
+            path = os.path.join(self[name].path, name)
+            os.remove(path)
+        except (OSError, IOError):
+            pass
+
+        # Remove network
+        try:
+            self[name].project.networks.remove()
+        except compose.config.errors.ComposeFileNotFound:
+            pass
+
+        # Remove config
         del self[name]
         self.save()
 
 
 class Dip(object):
     def __init__(self, name, home, path, env=None, remote=None,
-                 branch=None):
+                 branch=None, *kwargs):
         self.name = name
         self.home = os.path.abspath(home)
         self.path = os.path.abspath(path)
