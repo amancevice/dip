@@ -160,14 +160,15 @@ class Dip(object):
     def diff(self):
         for local in compose.config.config.get_default_config_files(self.home):
             # Format remote/branch:path/to/docker-compose.yml
-            repo = self.repo
-            remote = self.remote
-            branch = self.branch or repo.active_branch.name
-            rel = re.sub(r"^{root}".format(root=repo.working_dir), '', local)
+            branch = self.branch or self.repo.active_branch.name
+            rel = re.sub(r"^({})?/".format(self.repo.working_dir), '', local)
             remote = "{remote}/{branch}:{rel}"\
-                     .format(remote=remote,
+                     .format(remote=self.remote,
                              branch=branch,
-                             rel=rel.strip('/'))
+                             rel=rel)
+
+            # Fetch changes
+            self.repo.remote(self.remote).fetch()
 
             # Echo diff
             try:
