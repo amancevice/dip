@@ -168,7 +168,10 @@ class Dip(object):
                              rel=rel)
 
             # Fetch changes
-            self.repo.remote(self.remote).fetch()
+            try:
+                self.repo.remote(self.remote).fetch()
+            except git.exc.GitCommandError:
+                click.echo(colors.amber('Could not fetch remote'), err=True)
 
             # Echo diff
             try:

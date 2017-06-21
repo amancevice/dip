@@ -5,6 +5,7 @@ import sys
 import tempfile
 from copy import deepcopy
 
+import git
 import mock
 import pytest
 from dip import config
@@ -135,11 +136,37 @@ def test_Dip_definition(mock_cfg):
 @mock.patch('subprocess.check_output')
 @mock.patch('subprocess.call')
 @mock.patch('time.sleep')
-def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg,
-                  mock_repo):
+def test_Dip_diff(mock_time, mock_call, mock_check, mock_cfg, mock_repo):
     with tempfile.NamedTemporaryFile() as tmp:
         sys.stderr = tmp
         mock_repo.working_dir = '/path/to/git'
+        mock_cfg.return_value = ['/path/to/fizz/docker-compose.yml']
+        mock_check.return_value = 'DIFF'
+        dip = config.Dip('fizz',
+                         '/path/to/fizz',
+                         '/bin',
+                         {},
+                         'origin',
+                         'master')
+        dip.diff()
+        mock_call.assert_called_once_with([
+            'git', '--no-pager', 'diff',
+            'origin/master:path/to/fizz/docker-compose.yml',
+            '/path/to/fizz/docker-compose.yml'], stdout=tmp)
+
+
+@mock.patch('git.Repo')
+@mock.patch('compose.config.config.get_default_config_files')
+@mock.patch('subprocess.check_output')
+@mock.patch('subprocess.call')
+@mock.patch('time.sleep')
+def test_Dip_diff_fetch_err(mock_time, mock_call, mock_check, mock_cfg,
+                            mock_repo):
+    with tempfile.NamedTemporaryFile() as tmp:
+        sys.stderr = tmp
+        mock_repo.working_dir = '/path/to/git'
+        mock_repo.return_value.remote.side_effect = \
+            git.exc.GitCommandError([''], '')
         mock_cfg.return_value = ['/path/to/fizz/docker-compose.yml']
         mock_check.return_value = 'DIFF'
         dip = config.Dip('fizz',
