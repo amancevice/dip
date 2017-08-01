@@ -5,7 +5,6 @@ import os
 import re
 
 import click
-from . import __version__
 
 
 # pylint: disable=unused-argument
@@ -94,4 +93,3 @@ PATH = click.option('-p', '--path',
 REMOTE = click.option('-r', '--remote',
                       help='Optional git remote/branch',
                       type=Name())
-VERSION = click.version_option(__version__)

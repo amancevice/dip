@@ -1,4 +1,6 @@
 """
 dip CLI tool.
 """
-__version__ = '0.4.6'
+import pkg_resources
+
+__version__ = pkg_resources.get_distribution(__package__).version

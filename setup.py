@@ -1,16 +1,9 @@
-import re
 import textwrap
 from setuptools import setup
 
 
-def version():
-    search = r"^__version__ *= *['\"]([0-9.]+)['\"]"
-    initpy = open('./dip/__init__.py').read()
-    return re.search(search, initpy, re.MULTILINE).group(1)
-
-
 setup(name='dip',
-      version=version(),
+      version='0.5.0',
       author='amancevice',
       author_email='smallweirdnum@gmail.com',
       packages=['dip'],
@@ -29,6 +22,7 @@ setup(name='dip',
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.4',
                    'Programming Language :: Python :: 3.5',
+                   'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python'],
       install_requires=['click>=6.7.0',
                         'colored>=1.3.4',

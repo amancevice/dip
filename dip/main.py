@@ -14,7 +14,8 @@ from . import options
 from . import utils
 
 
-@click.group(context_settings={'obj': config.load()})
+@click.group(context_settings={'obj': config.load(),
+                               'help_option_names': ['-h', '--help']})
 @click.version_option(__version__)
 @click.pass_context
 def dip(ctx):
