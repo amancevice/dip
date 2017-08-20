@@ -85,14 +85,14 @@ ENTRYPOINT ["aws"]
 Our `docker-compose.yml` will define our service, `dipex`, and configure our AWS credentials (either through `ENV` variables or the `~/.aws` directory):
 
 ```
-version: '2'
+version: '3'
 services:
   dipex:
     image: amancevice/dipex
     build: .
     environment:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
     volumes:
       - ~/.aws:/root/.aws
 ```
@@ -139,7 +139,7 @@ The default configuration can be viewed using the `dip config` command:
 {
     "path": "/usr/local/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "dips": {},
 }
 ```
@@ -164,7 +164,7 @@ $ dip config
 {
     "path": "/path/to/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
@@ -185,7 +185,7 @@ $ dip config
 {
     "path": "/path/to/bin",
     "home": "/path/to/dip/config.json",
-    "version": "0.2.3",
+    "version": "0.5.0",
     "dips": {
         "dipex": {
             "home": "/path/to/docker-compose-dir",
@@ -225,7 +225,7 @@ Use `dip show NAME` to print the contents of the `docker-compose.yml` to screen:
 
 ```bash
 $ dip show dipex
-version: '2'
+version: '3'
 services:
   dipex:
     # ...
