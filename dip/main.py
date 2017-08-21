@@ -16,7 +16,7 @@ from . import utils
 
 @click.group(context_settings={'obj': config.load(),
                                'help_option_names': ['-h', '--help']})
-@click.version_option(__version__)
+@click.version_option(__version__, '-v', '--version')
 @click.pass_context
 def dip(ctx):
     """ Install CLIs using docker-compose.
