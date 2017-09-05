@@ -3,4 +3,7 @@ dip CLI tool.
 """
 import pkg_resources
 
-__version__ = pkg_resources.get_distribution(__package__).version
+try:
+    __version__ = pkg_resources.get_distribution(__package__).version
+except pkg_resources.DistributionNotFound:  # pragma: no cover
+    __version__ = None                      # pragma: no cover
