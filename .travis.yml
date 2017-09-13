@@ -6,10 +6,10 @@ python:
 - '3.4'
 - '3.5'
 - '3.6'
-install: pip install . codecov flake8 pytest pytest-cov
+install: pip install . codecov pytest pytest-cov pylint
 script:
 - py.test --cov dip --cov-report term-missing
-- flake8 dip
+- pylint dip
 after_success: codecov
 deploy:
   provider: pypi
