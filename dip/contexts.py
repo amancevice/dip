@@ -7,9 +7,9 @@ import os
 import click
 import compose
 import git
-from . import colors
-from . import config
-from . import errors
+from dip import colors
+from dip import config
+from dip import errors
 
 
 def verify_service(dip):

@@ -1,7 +1,7 @@
 """
 Default values.
 """
-from . import utils
+from dip import utils
 
 PATH = u'/usr/local/bin'
 HOME = utils.abspath('config.json')

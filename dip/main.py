@@ -5,26 +5,26 @@ import json
 import sys
 
 import click
-from . import __version__
-from . import contexts
-from . import colors
-from . import config
-from . import errors
-from . import options
-from . import utils
+from dip import __version__
+from dip import contexts
+from dip import colors
+from dip import config
+from dip import errors
+from dip import options
+from dip import utils
 
 
 @click.group(context_settings={'obj': config.load(),
                                'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-v', '--version')
 @click.pass_context
-# pylint: disable=unused-argument
 def dip(ctx):
     """ Install CLIs using docker-compose.
 
         See https://github.com/amancevice/dip for details & instructions.
     """
-    pass  # pragma: no cover
+    if ctx:   # pragma: no cover
+        pass  # pragma: no cover
 
 
 @dip.command('config')

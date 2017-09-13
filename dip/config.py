@@ -13,11 +13,11 @@ import click
 import compose.cli.command
 import easysettings
 import git
-from . import __version__
-from . import colors
-from . import defaults
-from . import errors
-from . import utils
+from dip import __version__
+from dip import colors
+from dip import defaults
+from dip import errors
+from dip import utils
 
 DEFAULT = {'dips': {},
            'home': defaults.HOME,
