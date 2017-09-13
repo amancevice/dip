@@ -13,6 +13,7 @@ from . import errors
 
 
 def verify_service(dip):
+    """ Verify a docker-compose service is usable. """
     try:
         dip.service
     except compose.config.errors.ComposeFileNotFound:
@@ -23,6 +24,7 @@ def verify_service(dip):
 
 @contextlib.contextmanager
 def lazy_load(ctx, name):
+    """ Load dip object without validating it. """
     # Get dip object
     try:
         yield ctx.obj[name]
@@ -32,6 +34,7 @@ def lazy_load(ctx, name):
 
 @contextlib.contextmanager
 def load(ctx, name):
+    """ Load dip object and validate its state. """
     # Get dip object
     with lazy_load(ctx, name) as dip:
         # Verify dip service state
@@ -43,8 +46,7 @@ def load(ctx, name):
         # Verify local/remote state
         if dip.remote:
             try:
-                dip.repo
-                dip.diff()
+                dip.repo and dip.diff()
             except git.exc.InvalidGitRepositoryError:
                 click.echo(colors.amber(
                     "'{name}' command has a remote but is not a git repository"
@@ -56,6 +58,7 @@ def load(ctx, name):
 
 @contextlib.contextmanager
 def preload(ctx, name, home, path):
+    """ Load a dip object and validate it is usable. """
     # Verify dip service state
     verify_service(config.Dip(name, home, path))
     # Yield config

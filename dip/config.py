@@ -41,7 +41,8 @@ def load(config_path=None):
 
 
 class DipConfig(collections.MutableMapping):
-    def __init__(self, **config):
+    """ Dip configuration object. """
+    def __init__(self, **config):  # pylint: disable=super-init-not-called
         self.config = config
         self.home = config.get('home')
         self.path = config.get('path')
@@ -69,6 +70,7 @@ class DipConfig(collections.MutableMapping):
     def __setitem__(self, key, val):
         self.config['dips'][key] = dict(val)
 
+    # pylint: disable=too-many-arguments
     def install(self, name, home, path, env, remote):
         """ Install config entry. """
         # Update config
@@ -117,8 +119,9 @@ class DipConfig(collections.MutableMapping):
 
 
 class Dip(object):
-    def __init__(self, name, home, path, env=None, remote=None,
-                 branch=None, *kwargs):
+    """ Dip application object. """
+    # pylint: disable=too-many-arguments
+    def __init__(self, name, home, path, env=None, remote=None, branch=None):
         self.name = name
         self.home = os.path.abspath(home)
         self.path = os.path.abspath(path)
@@ -141,23 +144,28 @@ class Dip(object):
 
     @property
     def repo(self):
+        """ Get git repository object. """
         return git.Repo(self.home, search_parent_directories=True)
 
     @property
     def project(self):
+        """ Get docker-compose project object. """
         return compose.cli.command.get_project(self.home)
 
     @property
     def service(self):
+        """ Get docker-compose service object. """
         return self.project.get_service(self.name)
 
     @property
     def definition(self):
+        """ Get compose file contents as string. """
         for cfg in compose.config.config.get_default_config_files(self.home):
             with open(cfg) as compose_file:
                 return compose_file.read()
 
     def diff(self):
+        """ Show git diff between local and remote configurations. """
         for local in compose.config.config.get_default_config_files(self.home):
             # Format remote/branch:path/to/docker-compose.yml
             branch = self.branch or self.repo.active_branch.name
