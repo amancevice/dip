@@ -37,7 +37,7 @@ def load(config_path=None):
         cfg = {}
 
     # Merge config with defaults
-    return DipConfig(**utils.dict_merge(deepcopy(DEFAULT), cfg))
+    return DipConfig(**utils.deepmerge(deepcopy(DEFAULT), cfg))
 
 
 class DipConfig(collections.MutableMapping):

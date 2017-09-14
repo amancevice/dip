@@ -29,12 +29,12 @@ def abspath(filename):
     return pkg_resources.resource_filename(root, path)
 
 
-def dict_merge(target, *args):
+def deepmerge(target, *args):
     """ Taken from: http://blog.impressiver.com/post/31434674390 """
     # Merge multiple dicts
     if len(args) > 1:
         for obj in args:
-            dict_merge(target, obj)
+            deepmerge(target, obj)
         return target
 
     # Recursively merge dicts and set non-dict values
@@ -43,7 +43,7 @@ def dict_merge(target, *args):
         return obj
     for key, val in obj.items():
         if key in target and isinstance(target[key], dict):
-            dict_merge(target[key], val)
+            deepmerge(target[key], val)
         else:
             target[key] = deepcopy(val)
     return target

@@ -5,11 +5,11 @@ import tempfile
 from dip import utils
 
 
-def test_dict_merge():
+def test_deepmerge():
     dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
     dict2 = {'fizz': {'buzz': {'jazz': 'junk', 'riff': 'raff'}}}
     dict3 = {'buzz': 'fizz'}
-    ret = utils.dict_merge(dict1, dict2, dict3)
+    ret = utils.deepmerge(dict1, dict2, dict3)
     exp = {
         'fizz': {
             'buzz': {
@@ -23,10 +23,10 @@ def test_dict_merge():
     assert ret == exp
 
 
-def test_dict_merge_nondict():
+def test_deepmerge_nondict():
     dict1 = {'fizz': {'buzz': {'jazz': 'funk', 'hub': 'bub'}}}
     dict2 = 42
-    ret = utils.dict_merge(dict1, dict2)
+    ret = utils.deepmerge(dict1, dict2)
     exp = 42
     assert ret == exp
 
