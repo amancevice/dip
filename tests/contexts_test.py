@@ -34,7 +34,7 @@ def test_lazy_load():
         mock_ctx.obj.__getitem__.assert_called_once_with('fizz')
 
 
-@mock.patch('dip.config.DipConfig.__getitem__')
+@mock.patch('dip.config.Settings.__getitem__')
 def test_lazy_err(mock_get):
     mock_get.side_effect = KeyError
     mock_ctx = mock.MagicMock()

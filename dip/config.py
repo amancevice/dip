@@ -37,10 +37,10 @@ def load(config_path=None):
         cfg = {}
 
     # Merge config with defaults
-    return DipConfig(**utils.deepmerge(deepcopy(DEFAULT), cfg))
+    return Settings(**utils.deepmerge(deepcopy(DEFAULT), cfg))
 
 
-class DipConfig(collections.MutableMapping):
+class Settings(collections.MutableMapping):
     """ Dip configuration object. """
     def __init__(self, **config):  # pylint: disable=super-init-not-called
         self.config = config
@@ -52,7 +52,7 @@ class DipConfig(collections.MutableMapping):
         return self.home
 
     def __repr__(self):
-        return "DipConfig({self})".format(self=self)
+        return "Settings({self})".format(self=self)
 
     def __delitem__(self, key):
         del self.config['dips'][key]
@@ -96,7 +96,7 @@ class DipConfig(collections.MutableMapping):
             cfg.update(self.config)
             cfg.save(self.home, sort_keys=True)
         except (OSError, IOError):
-            raise errors.DipConfigError(self.home)
+            raise errors.SettingsError(self.home)
 
     def uninstall(self, name):
         """ Uninstall config entry. """

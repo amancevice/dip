@@ -56,7 +56,7 @@ def test_config_err():
         assert result.exit_code == 1
 
 
-@mock.patch('dip.config.DipConfig.install')
+@mock.patch('dip.config.Settings.install')
 @mock.patch('dip.contexts.verify_service')
 def test_install(mock_svc, mock_ins):
     with invoke(main.dip_install, ['fizz', '/test/path',
@@ -121,7 +121,7 @@ def test_show(mock_load):
         assert result.output == '\nTEST\n\n'
 
 
-@mock.patch('dip.config.DipConfig.uninstall')
+@mock.patch('dip.config.Settings.uninstall')
 @mock.patch('dip.contexts.lazy_load')
 def test_uninstall(mock_load, mock_un):
     with invoke(main.dip_uninstall, ['fizz']) as result:

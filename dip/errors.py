@@ -9,10 +9,10 @@ class DipError(click.ClickException):
     pass
 
 
-class DipConfigError(DipError):
+class SettingsError(DipError):
     """ Error accessing dip config. """
     def __init__(self, path):
-        super(DipConfigError, self).__init__(
+        super(SettingsError, self).__init__(
             "Unable to access dip configuration at '{path}'".format(path=path))
 
 

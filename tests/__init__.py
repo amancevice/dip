@@ -1,6 +1,6 @@
 import dip.config
 
-CONFIG = dip.config.DipConfig(**{
+CONFIG = dip.config.Settings(**{
     'dips': {
         'fizz': {
             'branch': 'master',

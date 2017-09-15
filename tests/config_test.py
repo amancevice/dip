@@ -15,7 +15,7 @@ from . import CONFIG
 
 @contextlib.contextmanager
 def tempcfg():
-    yield config.DipConfig(**deepcopy(CONFIG.config))
+    yield config.Settings(**deepcopy(CONFIG.config))
 
 
 @mock.patch('easysettings.JSONSettings.from_file')
@@ -24,33 +24,33 @@ def test_load_err(mock_file):
     assert dict(config.load()) == {}
 
 
-def test_DipConfig_str():
+def test_Settings_str():
     home = '/path/to/dip/config.json'
-    assert str(config.DipConfig(home=home)) == home
+    assert str(config.Settings(home=home)) == home
 
 
-def test_DipConfig_repr():
+def test_Settings_repr():
     home = '/path/to/dip/config.json'
-    assert repr(config.DipConfig(home=home)) == \
-        "DipConfig({home})".format(home=home)
+    assert repr(config.Settings(home=home)) == \
+        "Settings({home})".format(home=home)
 
 
-def test_DipConfig_del():
+def test_Settings_del():
     with tempcfg() as cfg:
         del cfg['fizz']
         assert 'fizz' not in cfg.config['dips']
 
 
-def test_DipConfig_set():
+def test_Settings_set():
     with tempcfg() as cfg:
         cfg['foo'] = {'fizz': 'buzz'}
         assert 'foo' in cfg.config['dips']
 
 
-@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Settings.save')
 @mock.patch('dip.config.Dip')
 @mock.patch('dip.utils.write_exe')
-def test_DipConfig_install(mock_exe, mock_dip, mock_save):
+def test_Settings_install(mock_exe, mock_dip, mock_save):
     with tempcfg() as cfg:
         cfg.install('test',
                     '/path/to/test',
@@ -66,10 +66,10 @@ def test_DipConfig_install(mock_exe, mock_dip, mock_save):
         mock_exe.assert_called_once_with('/path/to/bin', 'test')
 
 
-@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Settings.save')
 @mock.patch('dip.config.Dip')
 @mock.patch('dip.utils.write_exe')
-def test_DipConfig_install_err(mock_exe, mock_dip, mock_save):
+def test_Settings_install_err(mock_exe, mock_dip, mock_save):
     with tempcfg() as cfg:
         mock_exe.side_effect = OSError
         with pytest.raises(errors.DipError):
@@ -80,10 +80,10 @@ def test_DipConfig_install_err(mock_exe, mock_dip, mock_save):
                         'origin/master')
 
 
-@mock.patch('dip.config.DipConfig.save')
+@mock.patch('dip.config.Settings.save')
 @mock.patch('dip.config.Dip')
 @mock.patch('dip.utils.write_exe')
-def test_DipConfig_install_no_branch(mock_exe, mock_dip, mock_save):
+def test_Settings_install_no_branch(mock_exe, mock_dip, mock_save):
     with tempcfg() as cfg:
         cfg.install('test',
                     '/path/to/test',
@@ -100,14 +100,14 @@ def test_DipConfig_install_no_branch(mock_exe, mock_dip, mock_save):
 
 
 @mock.patch('easysettings.JSONSettings.save')
-def test_DipConfig_save_err(mock_save):
+def test_Settings_save_err(mock_save):
     mock_save.side_effect = IOError
-    with pytest.raises(errors.DipConfigError):
+    with pytest.raises(errors.SettingsError):
         CONFIG.save()
 
 
-@mock.patch('dip.config.DipConfig.save')
-def test_DipConfig_uninstall(mock_save):
+@mock.patch('dip.config.Settings.save')
+def test_Settings_uninstall(mock_save):
     with tempcfg() as cfg:
         cfg.uninstall('fizz')
         assert 'fizz' not in cfg.config['dips']
