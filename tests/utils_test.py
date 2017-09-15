@@ -60,6 +60,6 @@ def test_write_exe():
         utils.write_exe(path, name)
         tmp.flush()
         assert tmp.read() == \
-            "#!/bin/bash\ndip run {name} -- $*\n"\
+            "#!/bin/bash\ndip run {name} -- $@\n"\
             .format(name=name).encode('utf-8')
         assert os.access(tmp.name, os.X_OK)

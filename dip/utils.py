@@ -74,5 +74,5 @@ def write_exe(path, name):
     """ Write executable to path. """
     fullpath = os.path.join(path, name)
     with open(fullpath, 'w') as exe:
-        exe.write("#!/bin/bash\ndip run {name} -- $*\n".format(name=name))
+        exe.write("#!/bin/bash\ndip run {name} -- $@\n".format(name=name))
     os.chmod(fullpath, 0o755)
