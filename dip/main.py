@@ -129,6 +129,15 @@ def dip_pull(ctx, name):
     sys.exit(1)
 
 
+@dip.command('reset')
+@options.FORCE
+@click.pass_context
+def dip_reset(ctx, force):
+    """ Reset dip configuration to defaults. """
+    if force:
+        ctx.obj.remove()
+
+
 @dip.command('run')
 @options.NAME
 @options.ARGS

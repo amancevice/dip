@@ -103,6 +103,22 @@ def test_pull_dip_err(mock_load):
 
 
 @mock.patch('dip.contexts.load')
+@mock.patch('os.remove')
+def test_reset(mock_rm, mock_load):
+    with invoke(main.dip_reset, ['--force']) as result:
+        assert result.exit_code == 0
+        mock_rm.assert_called_once_with('/path/to/config.json')
+
+
+@mock.patch('dip.contexts.load')
+@mock.patch('os.remove')
+def test_reset_err(mock_rm, mock_load):
+    mock_rm.side_effect = OSError
+    with invoke(main.dip_reset, ['--force']) as result:
+        assert result.exit_code == 1
+
+
+@mock.patch('dip.contexts.load')
 def test_run(mock_load):
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',

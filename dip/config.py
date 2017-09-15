@@ -89,11 +89,17 @@ class Settings(collections.MutableMapping):
             raise errors.DipError(
                 "Could not write executable for '{name}'".format(name=name))
 
+    def remove(self):
+        """ Remove settings file. """
+        try:
+            os.remove(self.home)
+        except (OSError, IOError):
+            raise errors.SettingsError(self.home)
+
     def save(self):
         """ Save config to config.json file. """
         try:
-            cfg = easysettings.JSONSettings()
-            cfg.update(self.config)
+            cfg = easysettings.JSONSettings(**self.config)
             cfg.save(self.home, sort_keys=True)
         except (OSError, IOError):
             raise errors.SettingsError(self.home)
