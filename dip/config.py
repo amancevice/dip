@@ -151,7 +151,7 @@ class Dip(object):
     @property
     def repo(self):
         """ Get git repository object. """
-        return git.Repo(self.home, search_parent_directories=True)
+        return Repo(self.home, self.remote, self.branch)
 
     @property
     def project(self):
@@ -172,38 +172,7 @@ class Dip(object):
 
     def diff(self):
         """ Show git diff between local and remote configurations. """
-        for local in compose.config.config.get_default_config_files(self.home):
-            # Format remote/branch:path/to/docker-compose.yml
-            branch = self.branch or self.repo.active_branch.name
-            rel = re.sub(r"^({})?/".format(self.repo.working_dir), '', local)
-            remote = "{remote}/{branch}:{rel}"\
-                     .format(remote=self.remote,
-                             branch=branch,
-                             rel=rel)
-
-            # Fetch changes
-            try:
-                self.repo.remote(self.remote).fetch()
-            except git.exc.GitCommandError:
-                click.echo(colors.amber('Could not fetch remote'), err=True)
-
-            # Echo diff
-            try:
-                cmd = ['git', '--no-pager', 'diff', remote, local]
-                with open(os.devnull, 'w') as devnull:
-                    diff = subprocess.check_output(cmd, stderr=devnull).strip()
-                if diff:
-                    with utils.newlines():
-                        msg = 'Local configuration has diverged from remote:\n'
-                        click.echo(colors.amber(msg), err=True)
-                        subprocess.call(cmd, stdout=sys.stderr)
-                        msg = "\nSleeping for {sleep}s"\
-                              .format(sleep=defaults.SLEEP)
-                        click.echo(msg, err=True)
-                    return time.sleep(defaults.SLEEP)
-            except subprocess.CalledProcessError:
-                click.echo(colors.amber("Could not access {remote}"
-                                        .format(remote=remote)), err=True)
+        self.repo.diff()
 
     def run(self, *args):
         """ Run CLI. """
@@ -218,3 +187,63 @@ class Dip(object):
         # Call docker-compose run --rm <args> <svc> $*
         subprocess.call(cmd + [self.name] + list(args),
                         stdout=sys.stdout, stderr=sys.stderr, stdin=sys.stdin)
+
+
+class Repo(object):
+    """ Git repository helper object. """
+    def __init__(self, path, remote='origin', branch=None, sleep=10):
+        self.path = os.path.abspath(path)
+        self.remote_name = remote
+        self.branch_name = branch
+        self.sleep = sleep
+
+    @property
+    def repo(self):
+        """ Git repository object. """
+        return git.Repo(self.path, search_parent_directories=True)
+
+    @property
+    def remote(self):
+        """ Git remote object. """
+        return self.repo.remote(self.remote_name)
+
+    def paths(self):
+        """ Yield remote/local path pairs. """
+        for local in compose.config.config.get_default_config_files(self.path):
+            expr = r"^({})?/".format(self.repo.working_dir)
+            relative = re.sub(expr, '', local)
+            remote = "{remote}/{branch}:{rel}".format(remote=self.remote_name,
+                                                      branch=self.branch_name,
+                                                      rel=relative)
+            yield remote, local
+
+    def fetch(self):
+        """ Fetch git remote. """
+        try:
+            self.remote.fetch()
+        except git.exc.GitCommandError:
+            click.echo(colors.amber('Could not fetch remote'), err=True)
+
+    def diff(self):
+        """ Echo diff output and sleep. """
+        # Fetch remote
+        self.fetch()
+
+        # Echo diff(s)
+        for remote, local in self.paths():
+            try:
+                cmd = ['git', '--no-pager', 'diff', remote, local]
+                with open(os.devnull, 'w') as devnull:
+                    diff = subprocess.check_output(cmd, stderr=devnull).strip()
+                if diff:
+                    with utils.newlines():
+                        msg = 'Local configuration has diverged from remote:\n'
+                        click.echo(colors.amber(msg), err=True)
+                        subprocess.call(cmd, stdout=sys.stderr)
+                        msg = "\nSleeping for {sleep}s"\
+                              .format(sleep=self.sleep)
+                        click.echo(msg, err=True)
+                    return time.sleep(self.sleep)
+            except subprocess.CalledProcessError:
+                click.echo(colors.amber("Could not access {remote}"
+                                        .format(remote=remote)), err=True)
