@@ -15,29 +15,31 @@ import easysettings
 import git
 from dip import __version__
 from dip import colors
-from dip import defaults
 from dip import errors
 from dip import utils
 
-DEFAULT = {'dips': {},
-           'home': defaults.HOME,
-           'path': defaults.PATH,
-           'version': __version__}
+HOME = utils.abspath('config.json')
+PATH = '/usr/local/bin'
+SLEEP = 10
+DEFAULTS = {'dips': {},
+            'home': HOME,
+            'path': PATH,
+            'version': __version__}
 
 
-def load(config_path=None):
+def load(path=None):
     """ Load config.json file. """
     # Use supplied path or default
-    config_path = config_path or defaults.HOME
+    path = path or HOME
 
     # Read config.json
     try:
-        cfg = dict(easysettings.JSONSettings.from_file(config_path))
+        cfg = dict(easysettings.JSONSettings.from_file(path))
     except (OSError, IOError, ValueError):
         cfg = {}
 
     # Merge config with defaults
-    return Settings(**utils.deepmerge(deepcopy(DEFAULT), cfg))
+    return Settings(**utils.deepmerge(deepcopy(DEFAULTS), cfg))
 
 
 class Settings(collections.MutableMapping):
@@ -191,7 +193,7 @@ class Dip(object):
 
 class Repo(object):
     """ Git repository helper object. """
-    def __init__(self, path, remote='origin', branch=None, sleep=10):
+    def __init__(self, path, remote='origin', branch=None, sleep=SLEEP):
         self.path = os.path.abspath(path)
         self.remote_name = remote
         self.branch_name = branch

@@ -17,14 +17,12 @@ from dip import utils
 @click.group(context_settings={'obj': config.load(),
                                'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-v', '--version')
-@click.pass_context
-def dip(ctx):
+def dip():
     """ Install CLIs using docker-compose.
 
         See https://github.com/amancevice/dip for details & instructions.
     """
-    if ctx:   # pragma: no cover
-        pass  # pragma: no cover
+    pass  # pragma: no cover
 
 
 @dip.command('config')
@@ -35,9 +33,9 @@ def dip_config(ctx, gbl, keys):
     """ Show current dip configuration.
 
         \b
-        dip config NAME                      # Get NAME config dict
-        dip config NAME remote               # Get name of NAME remote
-        dip config --global home             # Get path to global config file
+        dip config NAME           # Get NAME config dict
+        dip config NAME remote    # Get name of NAME remote
+        dip config --global home  # Get path to global config file
     """
     # Set up keys for --global or normal
     if not gbl and any(keys):

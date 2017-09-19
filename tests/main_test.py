@@ -9,7 +9,7 @@ from dip import errors
 from dip import main
 from . import CONFIG
 
-dip.defaults.PATH = CONFIG.path
+dip.config.PATH = CONFIG.path
 
 
 @contextlib.contextmanager
