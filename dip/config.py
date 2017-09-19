@@ -1,7 +1,6 @@
 """
 Dip configuration.
 """
-import collections
 import os
 import re
 import subprocess
@@ -42,9 +41,9 @@ def load(path=None):
     return Settings(**utils.deepmerge(deepcopy(DEFAULTS), cfg))
 
 
-class Settings(collections.MutableMapping):
+class Settings(object):
     """ Dip configuration object. """
-    def __init__(self, **config):  # pylint: disable=super-init-not-called
+    def __init__(self, **config):
         self.config = config
         self.home = config.get('home')
         self.path = config.get('path')
