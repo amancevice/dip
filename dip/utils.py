@@ -23,7 +23,7 @@ def newlines(echo=True):
         click.echo()
 
 
-def abspath(filename):
+def pkgpath(filename):
     """ Helper to return abspath of dip file. """
     path = os.path.join(__package__, filename)
     root = pkg_resources.Requirement.parse(__package__)

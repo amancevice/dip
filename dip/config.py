@@ -17,7 +17,7 @@ from dip import colors
 from dip import errors
 from dip import utils
 
-HOME = utils.abspath('config.json')
+HOME = utils.pkgpath('config.json')
 PATH = '/usr/local/bin'
 SLEEP = 10
 DEFAULTS = {'dips': {},
