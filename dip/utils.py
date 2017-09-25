@@ -76,26 +76,3 @@ def piped_redirected(stream):
     """ Determine if stream is piped or redirected. """
     mode = os.fstat(stream.fileno()).st_mode
     return stat.S_ISFIFO(mode) or stat.S_ISREG(mode)
-
-
-def remove_exe(path, name):
-    """ Remove executable. """
-    try:
-        path = os.path.join(path, name)
-        os.remove(path)
-    except (OSError, IOError):
-        pass
-
-
-def write_exe(path, name):
-    """ Write executable to path. """
-    try:
-        fullpath = os.path.join(path, name)
-        hashbang = "#!/bin/bash"
-        command = "dip run {name} -- $@\n".format(name=name)
-        with open(fullpath, 'w') as exe:
-            exe.write("\n".join([hashbang, command]))
-        os.chmod(fullpath, 0o755)
-    except (OSError, IOError):
-        raise errors.DipError(
-            "Could not write executable for '{name}'".format(name=name))

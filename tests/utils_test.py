@@ -53,22 +53,3 @@ def test_notty():
             sys.stdin = stdin
             sys.stdout = stdout
             assert utils.notty() is False
-
-
-@mock.patch('os.remove')
-def test_remove_exe(mock_rm):
-    with tempfile.NamedTemporaryFile() as tmp:
-        path, name = os.path.split(tmp.name)
-        utils.remove_exe(path, name)
-        mock_rm.assert_called_once_with(tmp.name)
-
-
-def test_write_exe():
-    with tempfile.NamedTemporaryFile() as tmp:
-        path, name = os.path.split(tmp.name)
-        utils.write_exe(path, name)
-        tmp.flush()
-        assert tmp.read() == \
-            "#!/bin/bash\ndip run {name} -- $@\n"\
-            .format(name=name).encode('utf-8')
-        assert os.access(tmp.name, os.X_OK)
