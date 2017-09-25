@@ -1,26 +1,12 @@
 """
 Utilities.
 """
-import contextlib
 import os
 import re
 import stat
 import sys
-from copy import deepcopy
 
-import click
 import pkg_resources
-from dip import errors
-
-
-@contextlib.contextmanager
-def newlines(echo=True):
-    """ Helper to wrap output in newlines. """
-    if echo:
-        click.echo()
-    yield
-    if echo:
-        click.echo()
 
 
 def pkgpath(filename):
@@ -35,36 +21,6 @@ def contractuser(path):
     userhome = os.path.expanduser('~')
     userpath = re.sub(r'^{}'.format(userhome), '~', path)
     return userpath
-
-
-def deepmerge(target, *args):
-    """ Taken from: http://blog.impressiver.com/post/31434674390 """
-    # Merge multiple dicts
-    if len(args) > 1:
-        for obj in args:
-            deepmerge(target, obj)
-        return target
-
-    # Recursively merge dicts and set non-dict values
-    obj = args[0]
-    if not isinstance(obj, dict):
-        return obj
-    for key, val in obj.items():
-        if key in target and isinstance(target[key], dict):
-            deepmerge(target[key], val)
-        else:
-            target[key] = deepcopy(val)
-    return target
-
-
-def flatten(items):
-    """ Flatten a list of lists. """
-    return [y for x in items for y in x]
-
-
-def lreplace(search, replace, string):
-    """ Left-replace. """
-    return re.sub(r"^{search}".format(search=search), replace, string)
 
 
 def notty():

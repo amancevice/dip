@@ -27,6 +27,5 @@ setup(name='dip',
       install_requires=['click>=6.7.0',
                         'colored>=1.3.4',
                         'docker-compose>=1.10.0',
-                        'gitpython>=2.1.3',
-                        'easysettings>=2.1.0'],
+                        'gitpython>=2.1.3'],
       entry_points={'console_scripts': ['dip=dip.main:dip']})

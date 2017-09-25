@@ -1,36 +1,23 @@
-import dip.config
+from dip import settings
 
-CONFIG = dip.config.Settings(**{
-    'dips': {
-        'fizz': {
-            'branch': 'master',
-            'env': {
-                'FIZZ': 'BUZZ',
-                'JAZZ': 'RAZZ'
-            },
-            'home': '/path/to/fizz',
-            'path': '/path/to/bin',
-            'remote': 'origin'
-        },
-        'buzz': {
-            'branch': None,
-            'env': {},
-            'home': '/path/to/buzz',
-            'path': '/path/to/bin',
-            'remote': 'origin'
-        },
-        'jazz': {
-            'branch': None,
-            'env': {
-                'FIZZ': 'BUZZ',
-                'JAZZ': 'RAZZ'
-            },
-            'home': '/path/to/jazz',
-            'path': '/path/to/bin',
-            'remote': None
-        }
-    },
-    'home': '/path/to/config.json',
-    'path': '/path/to/bin',
-    'version': dip.__version__
-})
+
+SETTINGS = {'fizz': {'name': 'fizz',
+                     'home': '/path/to/fizz',
+                     'path': '/path/to/bin',
+                     'env': {'FIZZ': 'BUZZ', 'JAZZ': 'RAZZ'},
+                     'git': {'branch': 'master', 'remote': 'origin'}},
+            'buzz': {'name': 'buzz',
+                     'home': '/path/to/buzz',
+                     'path': '/path/to/bin',
+                     'git': {'remote': 'origin'}},
+            'jazz': {'name': 'jazz',
+                     'home': '/path/to/jazz',
+                     'path': '/path/to/bin',
+                     'env': {'FIZZ': 'BUZZ', 'JAZZ': 'RAZZ'}}}
+
+
+# pylint: disable=too-many-ancestors
+class MockSettings(settings.Settings):
+    def __init__(self, filename=None):
+        super(MockSettings, self).__init__(**SETTINGS)
+        self.filename = filename or '/path/to/settings.json'

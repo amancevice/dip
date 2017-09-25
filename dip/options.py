@@ -44,6 +44,18 @@ def expand_home(ctx, param, value):
     return os.path.abspath(os.path.expanduser(value))
 
 
+# pylint: disable=unused-argument
+def split_remote(ctx, param, value):
+    """ Split remote/branch into tuple. """
+    if value:
+        try:
+            remote, branch = value.split('/')
+        except ValueError:
+            remote, branch = value, None
+        return remote, branch
+    return value, value
+
+
 class Env(click.types.StringParamType):
     """ Override of the StringParamType. """
     name = 'ENV'
@@ -83,17 +95,18 @@ FORCE = click.option('-f', '--force',
                      help='Do not prompt',
                      is_flag=True,
                      prompt='Are you sure?')
-GLOBAL = click.option('-g', '--global', 'gbl',
-                      help='Get global configuration key',
-                      is_flag=True)
 SECRET = click.option('-x', '--secret',
                       callback=validate_secret,
                       help='Set secret ENV',
                       multiple=True,
                       type=Env())
+SLEEP = click.option('-s', '--sleep',
+                     help='Number of seconds to sleep',
+                     type=click.INT)
 PATH = click.option('-p', '--path',
                     help='Path to write executable',
                     type=Path())
 REMOTE = click.option('-r', '--remote',
+                      callback=split_remote,
                       help='Optional git remote/branch',
                       type=Name())

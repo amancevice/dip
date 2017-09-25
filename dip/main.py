@@ -5,17 +5,36 @@ import json
 import sys
 
 import click
+import docker
 from dip import __version__
-from dip import contexts
 from dip import colors
-from dip import config
 from dip import errors
 from dip import options
-from dip import utils
+from dip import settings
 
 
-@click.group(context_settings={'obj': config.load(),
-                               'help_option_names': ['-h', '--help']})
+def clickerr(func):
+    """ Decorator to catch errors and re-raise as ClickException. """
+    # pylint: disable=missing-docstring
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except errors.DipError as err:
+            raise click.ClickException(str(err))
+    wrapper.__doc__ = func.__doc__
+    return wrapper
+
+
+def warnsleep(app):
+    """ Warn about app divergence and sleep. """
+    warn = "\n"\
+        "Local service has diverged from remote or is inaccessible.\n"\
+        "Sleeping for {}s\n".format(app.repo.sleeptime)
+    click.echo(colors.amber(warn), err=True)
+    app.repo.sleep()
+
+
+@click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-v', '--version')
 def dip():
     """ Install CLIs using docker-compose.
@@ -26,32 +45,27 @@ def dip():
 
 
 @dip.command('config')
-@options.GLOBAL
 @options.KEYS
-@click.pass_context
-def dip_config(ctx, gbl, keys):
+@clickerr
+def dip_config(keys):
     """ Show current dip configuration.
 
         \b
-        dip config NAME           # Get NAME config dict
-        dip config NAME remote    # Get name of NAME remote
-        dip config --global home  # Get path to global config file
+        dip config NAME             # Get NAME config dict
+        dip config NAME git remote  # Get name of remote
     """
-    # Set up keys for --global or normal
-    if not gbl and any(keys):
-        keys = ('dips',) + keys
+    with settings.load() as cfg:
+        working = cfg.data
+        for key in keys:
+            try:
+                working = working[key]
+            except (KeyError, TypeError):
+                sys.exit(1)
 
-    working = ctx.obj.config
-    for key in keys:
-        try:
-            working = working[key]
-        except (KeyError, TypeError):
-            sys.exit(1)
-
-    if isinstance(working, dict):
-        click.echo(json.dumps(working, indent=4, sort_keys=True))
-    else:
-        click.echo(working)
+        if isinstance(working, dict):
+            click.echo(json.dumps(working, indent=4, sort_keys=True))
+        else:
+            click.echo(working)
 
 
 # pylint: disable=too-many-arguments
@@ -62,8 +76,9 @@ def dip_config(ctx, gbl, keys):
 @options.REMOTE
 @options.ENV
 @options.SECRET
-@click.pass_context
-def dip_install(ctx, name, home, path, remote, env, secret):
+@options.SLEEP
+@clickerr
+def dip_install(name, home, path, remote, env, secret, sleep):
     """ Install CLI by name.
 
         \b
@@ -71,100 +86,117 @@ def dip_install(ctx, name, home, path, remote, env, secret):
         dip install fizz /path/to/dir        # Absolute path
         dip install fizz . -r origin/master  # Tracking git remote/branch
     """
-    # Interactively set ENV
-    for sec in secret:
-        env[sec] = click.prompt(sec, hide_input=True)  # pragma: no cover
+    with settings.saveonexit() as cfg:
+        # Interactively set ENV
+        for sec in secret:
+            env[sec] = click.prompt(sec, hide_input=True)  # pragma: no cover
 
-    # Install
-    path = path or ctx.obj.path
-    with contexts.preload(ctx, name, home, path) as app:
-        app.install(name, home, path, env, remote)
+        # Parse git config
+        remote, branch = remote
+        git = {'remote': remote, 'branch': branch, 'sleep': sleep}
 
-    # Finish
-    msg = "Installed {name} to {path}"
-    click.echo(msg.format(name=colors.teal(name), path=colors.blue(path)))
+        # Install
+        app = cfg.install(name, home, path, env, git)
+
+        # Validate configuration
+        app.validate()
+
+        # Finish
+        click.echo("Installed {name} to {path}".format(
+            name=colors.teal(app.name),
+            path=colors.blue(app.path)))
 
 
 @dip.command('list')
-@click.pass_context
-def dip_list(ctx):
+@clickerr
+def dip_list():
     """ List installed CLIs. """
-    if any(ctx.obj):
-        with utils.newlines(any(ctx.obj)):
-            max_name = max(len(x) for x in ctx.obj)
-            max_home = max(len(ctx.obj[x].home) for x in ctx.obj)
-            for key in sorted(ctx.obj):
-                app = ctx.obj[key]
+    with settings.load() as cfg:
+        if any(cfg):
+            click.echo()
+            max_name = max(len(x) for x in cfg)
+            max_home = max(len(cfg[x].home) for x in cfg)
+            for key in sorted(cfg):
+                app = cfg[key]
                 name = colors.teal(app.name.ljust(max_name))
                 home = colors.blue(app.home.ljust(max_home))
-                remote = app.remote
-                branch = app.branch
-                if remote and branch:
-                    tpl = "{name} {home} @ {remote}/{branch}"
-                elif remote:
-                    tpl = "{name} {home} @ {remote}"
-                else:
-                    tpl = "{name} {home}"
+                remote = branch = None
+                tpl = "{name} {home}"
+                if app.repo:
+                    try:
+                        remote = app.repo.remotename
+                        branch = app.repo.branch
+                        tpl += " {remote}/{branch}"
+                    except Exception:  # pylint:  disable=broad-except
+                        tpl += colors.red(' [git error]')
                 click.echo(tpl.format(name=name,
                                       home=home,
                                       remote=remote,
                                       branch=branch))
+            click.echo()
 
 
 @dip.command('pull')
 @options.NAME
-@click.pass_context
-def dip_pull(ctx, name):
+@clickerr
+def dip_pull(name):
     """ Pull updates from docker-compose. """
-    try:
-        with contexts.load(ctx, name) as app:
-            with utils.newlines():
-                return app.service.pull()
-    except errors.DipError as err:
-        click.echo(err, err=True)
-    except Exception:  # pylint: disable=broad-except
-        click.echo("Could not pull '{name}' image".format(name=name), err=True)
-    sys.exit(1)
+    with settings.diffapp(name) as app_diff:
+        app, diff = app_diff
+        if diff:
+            warnsleep(app)
+        try:
+            return app.service.pull()
+        except docker.errors.APIError:
+            err = "Could not pull '{}' image".format(name)
+            click.echo(colors.red(err), err=True)
+        sys.exit(1)
 
 
 @dip.command('reset')
 @options.FORCE
-@click.pass_context
-def dip_reset(ctx, force):
+@clickerr
+def dip_reset(force):
     """ Reset dip configuration to defaults. """
     if force:
-        ctx.obj.remove()
+        settings.reset()
 
 
 @dip.command('run')
 @options.NAME
 @options.ARGS
-@click.pass_context
-def dip_run(ctx, name, args):
+@clickerr
+def dip_run(name, args):
     """ Run dip CLI. """
-    with contexts.load(ctx, name) as app:
+    with settings.diffapp(name) as app_diff:
+        app, diff = app_diff
+        if diff:
+            warnsleep(app)
         app.run(*args)
 
 
 @dip.command('show')
 @options.NAME
-@click.pass_context
-def dip_show(ctx, name):
+@clickerr
+def dip_show(name):
     """ Show service configuration. """
-    with contexts.load(ctx, name) as app:
-        with utils.newlines():
-            click.echo(app.definition.strip())
+    with settings.diffapp(name) as app_diff:
+        app, diff = app_diff
+        if diff:
+            warnsleep(app)
+        for definition in app.definitions:
+            click.echo("\n{}\n".format(definition.strip()))
 
 
 @dip.command('uninstall')
 @options.NAMES
-@click.pass_context
-def dip_uninstall(ctx, names):
+@clickerr
+def dip_uninstall(names):
     """ Uninstall CLI by name. """
     for name in names:
-        with contexts.lazy_load(ctx, name):
-            # Uninstall
-            ctx.obj.uninstall(name)
-
-            # Finish
-            click.echo("Uninstalled {name}".format(name=colors.red(name)))
+        with settings.saveonexit() as cfg:
+            try:
+                cfg.uninstall(name)
+                click.echo("Uninstalled {name}".format(name=colors.red(name)))
+            except KeyError:
+                pass
