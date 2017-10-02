@@ -12,8 +12,7 @@ setup(name='dip',
       long_description=textwrap.dedent(
           '''See GitHub_ for documentation.
           .. _GitHub: https://github.com/amancevice/dip'''),
-      classifiers=['Development Status :: 3 - Alpha',
-                   'Intended Audience :: Developers',
+      classifiers=['Intended Audience :: Developers',
                    'License :: OSI Approved :: MIT License',
                    'Operating System :: OS Independent',
                    'Topic :: Utilities',
