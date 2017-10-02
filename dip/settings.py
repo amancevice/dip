@@ -19,6 +19,7 @@ from dip import utils
 
 class Settings(collections.MutableMapping):
     """ Dip app Settings. """
+    # pylint: disable=super-init-not-called
     HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
     PATH = os.getenv('DIP_PATH', '/usr/local/bin')
     SLEEP = int(os.getenv('DIP_SLEEP') or '5')
@@ -83,9 +84,9 @@ class Settings(collections.MutableMapping):
         del self[name]
 
 
-# pylint: disable=too-many-arguments
 class Dip(collections.Mapping):
     """ Dip app. """
+    # pylint: disable=super-init-not-called,too-many-arguments
     def __init__(self, name, home, path=None, env=None, git=None):
         self.name = str(name)
         self.home = str(home)
@@ -185,6 +186,7 @@ class Dip(collections.Mapping):
     def validate(self, skipgit=False):
         """ Validate git repo and compose project. """
         if not skipgit and self.repo:
+            # pylint: disable=no-member
             try:
                 assert self.repo.repo
                 assert self.repo.remote
@@ -257,8 +259,9 @@ class Repo(object):
 
     def diffs(self):
         """ Echo diff output and sleep. """
+        # Fetch remote
+        # pylint: disable=no-member
         try:
-            # Fetch remote
             self.remote.fetch()
         except pygit.exc.GitCommandError:
             raise errors.GitFetchError(self.remotename)
