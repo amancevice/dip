@@ -147,7 +147,7 @@ class Dip(collections.Mapping):
 
     def diff(self):
         """ Diff remote configuration. """
-        return any(self.repo.diffs())
+        return self.repo and any(self.repo.diffs())
 
     def install(self):
         """ Write executable. """
