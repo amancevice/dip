@@ -11,6 +11,7 @@ from dip import colors
 from dip import errors
 from dip import options
 from dip import settings
+from dip import utils
 
 
 def clickerr(func):
@@ -114,12 +115,13 @@ def dip_list():
     with settings.load() as cfg:
         if any(cfg):
             click.echo()
-            max_name = max(len(x) for x in cfg)
-            max_home = max(len(cfg[x].home) for x in cfg)
+            homes = [utils.contractuser(cfg[x].home) for x in cfg]
+            maxname = max(len(x) for x in cfg)
+            maxhome = max(len(x) for x in homes)
             for key in sorted(cfg):
                 app = cfg[key]
-                name = colors.teal(app.name.ljust(max_name))
-                home = colors.blue(app.home.ljust(max_home))
+                name = colors.teal(app.name.ljust(maxname))
+                home = colors.blue(utils.contractuser(app.home).ljust(maxhome))
                 remote = branch = None
                 tpl = "{name} {home}"
                 if app.repo:
