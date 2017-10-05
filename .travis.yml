@@ -7,7 +7,7 @@ python:
 - '3.6'
 install: pip install . codecov pytest pytest-cov pylint
 script:
-- py.test --cov dip --cov-report term-missing
+- py.test
 - pylint dip
 after_success: codecov
 deploy:
