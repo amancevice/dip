@@ -104,6 +104,7 @@ SLEEP = click.option('-s', '--sleep',
                      help='Number of seconds to sleep',
                      type=click.INT)
 PATH = click.option('-p', '--path',
+                    callback=expand_home,
                     help='Path to write executable',
                     type=Path())
 REMOTE = click.option('-r', '--remote',
