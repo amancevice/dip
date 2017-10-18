@@ -18,14 +18,14 @@ pip install dip
 1. Write a CLI in whatever language you choose
 2. Create a `Dockerfile` that installs your CLI application
 3. Write a `docker-compose.yml` file that builds the image and defines the run-time configuration
-4. Run `dip install <service>` to install the service as an executable command
-5. Run `dip uninstall <service>` to remove the executable from the file system
+4. Run `dip install <service> .` to install the service as an executable command
+5. Run `dip uninstall <service> .` to remove the executable from the file system
 
 ## Tracking a git remote
 
 1. Follow steps 1-3 above
 2. Commit these files to a branch on a git remote (eg. `origin/master`)
-3. Run `dip install <service> --remote <remote>/<branch>` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote/branch
+3. Run `dip install <service> . --remote <remote>/<branch>` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote/branch
 4. Run `dip uninstall <service>` to remove the executable from the file system
 
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
@@ -37,8 +37,7 @@ Use the `--env` option to install the CLI with an environment variable set. Use 
 Ex.
 
 ```bash
-cd /path/to/docker-compose-dir
-dip install mycli . \
+dip install mycli /path/to/project \
   --remote origin/master \
   --env FIZZ=BUZZ
 ```
@@ -102,16 +101,16 @@ services:
 Installing the CLI is as simple as:
 
 ```bash
-dip install dipex
+dip install dipex .
 ```
 
 Or, if you would like to install tracking a remote:
 
 ```bash
-dip install dipex --remote origin/master
+dip install dipex . --remote origin/master
 ```
 
-If you are not currently inside the directory where your `docker-compose.yml` file is, you may supply it as a positional argument:
+If you are not currently inside the directory where your `docker-compose.yml` file is, supply it as a positional argument:
 
 ```bash
 dip install dipex /path/to/project [--remote origin/master]
@@ -137,23 +136,23 @@ The default configuration can be viewed using the `dip config` command:
 
 ```json
 {
-    "path": "/usr/local/bin",
-    "home": "/path/to/dip/config.json",
-    "version": "0.5.0",
-    "dips": {},
+    "dipex": {
+        "git": {
+            "branch": "master",
+            "remote": "origin"
+        },
+        "home": "/path/to/project",
+        "name": "dipex",
+        "path": "/usr/local/bin"
+    },
 }
 ```
 
-The default `PATH` for installations can be changed:
+The default `PATH` for installations can be changed by setting `ENV` variables:
 
 ```bash
-$ dip config --global path
-/usr/local/bin
-```
-
-```bash
-$ dip config --global path
-/path/to/bin
+export DIP_HOME=/path/to/settings.json
+export DIP_PATH=/bath/to/bin
 ```
 
 After an item is installed it will appear in the `dips` key:
@@ -162,17 +161,10 @@ After an item is installed it will appear in the `dips` key:
 $ dip install dipex /path/to/project
 $ dip config
 {
-    "path": "/path/to/bin",
-    "home": "/path/to/dip/config.json",
-    "version": "0.5.0",
-    "dips": {
-        "dipex": {
-            "home": "/path/to/docker-compose-dir",
-            "path": "/path/to/bin",
-            "remote": null,
-            "branch": null,
-            "env": {}
-        }
+    "dipex": {
+        "home": "/path/to/project",
+        "name": "dipex",
+        "path": "/usr/local/bin"
     }
 }
 ```
@@ -183,17 +175,10 @@ Use the `--path` option when installing/uninstalling to override the default pat
 $ dip install --path /my/bin dipex /path/to/project
 $ dip config
 {
-    "path": "/path/to/bin",
-    "home": "/path/to/dip/config.json",
-    "version": "0.5.0",
-    "dips": {
-        "dipex": {
-            "home": "/path/to/docker-compose-dir",
-            "path": "/my/bin",
-            "remote": null,
-            "branch": null,
-            "env": {}
-        }
+    "dipex": {
+        "home": "/path/to/project",
+        "name": "dipex",
+        "path": "/my/bin"
     }
 }
 ```
@@ -204,10 +189,8 @@ Use `dip config NAME` to display the configuration of an installed CLI:
 $ dip config dipex
 {
     "home": "/path/to/project",
-    "path": "/my/bin",
-    "remote": null,
-    "branch": null,
-    "env": {}
+    "name": "dipex",
+    "path": "/my/bin"
 }
 ```
 
