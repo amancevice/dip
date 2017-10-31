@@ -130,7 +130,7 @@ def test_repo_branch_active(mock_branch):
 
 def test_repo_sleeptime():
     repo = settings.Repo('.', 'origin')
-    assert repo.sleeptime == settings.Settings.SLEEP
+    assert repo.sleeptime == settings.SLEEP
 
 
 @mock.patch('time.sleep')
@@ -174,7 +174,7 @@ def test_dip_init():
     ret = settings.Dip('dipex', '/path/to/docker/compose/dir')
     assert ret.name == 'dipex'
     assert ret.home == '/path/to/docker/compose/dir'
-    assert ret.path == settings.Settings.PATH
+    assert ret.path == settings.PATH
     assert ret.env == {}
     assert ret.git == {}
 
@@ -193,7 +193,7 @@ def test_dip_init_env():
                        env={'ENV': 'VAL'})
     assert ret.name == 'dipex'
     assert ret.home == '/path/to/docker/compose/dir'
-    assert ret.path == settings.Settings.PATH
+    assert ret.path == settings.PATH
     assert ret.env == {'ENV': 'VAL'}
     assert ret.git == {}
 
@@ -203,7 +203,7 @@ def test_dip_init_git():
                        git={'remote': 'origin', 'branch': 'master'})
     assert ret.name == 'dipex'
     assert ret.home == '/path/to/docker/compose/dir'
-    assert ret.path == settings.Settings.PATH
+    assert ret.path == settings.PATH
     assert ret.env == {}
     assert ret.git == {'remote': 'origin', 'branch': 'master'}
 
@@ -405,12 +405,12 @@ def test_dip_val_no_such_path_error(mock_repo):
 
 
 def test_settings_str():
-    assert str(settings.Settings()) == settings.Settings.HOME
+    assert str(settings.Settings()) == settings.HOME
 
 
 def test_settings_repr():
     assert repr(settings.Settings()) == \
-        "Settings({home})".format(home=settings.Settings.HOME)
+        "Settings({home})".format(home=settings.HOME)
 
 
 def test_settings_getitem():
@@ -423,7 +423,7 @@ def test_settings_setitem():
     cfg['fuzz'] = settings.Dip('fuzz', '/path/to/docker/compose/dir')
     assert dict(cfg['fuzz']) == {'name': 'fuzz',
                                  'home': '/path/to/docker/compose/dir',
-                                 'path': settings.Settings.PATH}
+                                 'path': settings.PATH}
 
 
 def test_settings_delitem():

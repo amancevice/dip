@@ -16,19 +16,19 @@ import git as pygit
 from dip import errors
 from dip import utils
 
+HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
+PATH = os.getenv('DIP_PATH', '/usr/local/bin')
+SLEEP = int(os.getenv('DIP_SLEEP') or '5')
+
 
 class Settings(collections.MutableMapping):
     """ Dip app Settings. """
     # pylint: disable=super-init-not-called
-    HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
-    PATH = os.getenv('DIP_PATH', '/usr/local/bin')
-    SLEEP = int(os.getenv('DIP_SLEEP') or '5')
-
     def __init__(self, *args, **kwargs):
         self.data = dict(*args, **kwargs)
 
     def __str__(self):
-        return self.HOME
+        return HOME
 
     def __repr__(self):
         return "Settings({self})".format(self=self)
@@ -62,20 +62,20 @@ class Settings(collections.MutableMapping):
     def load(self, filename=None):
         """ Load settings. """
         try:
-            with open(filename or self.HOME) as settings:
+            with open(filename or HOME) as settings:
                 self.data = json.loads(settings.read())
         except (OSError, IOError):
             self.save(filename)
         except ValueError:
-            raise errors.SettingsError(self.HOME)
+            raise errors.SettingsError(HOME)
 
     def save(self, filename=None):
         """ Save settings. """
         try:
-            with open(filename or self.HOME, 'w') as settings:
+            with open(filename or HOME, 'w') as settings:
                 settings.write(json.dumps(self.data, indent=4, sort_keys=True))
         except (OSError, IOError, ValueError):
-            raise errors.SettingsError(self.HOME)
+            raise errors.SettingsError(HOME)
 
     def uninstall(self, name):
         """ Uninstall applicaton. """
@@ -90,7 +90,7 @@ class Dip(collections.Mapping):
     def __init__(self, name, home, path=None, env=None, git=None):
         self.name = str(name)
         self.home = str(home)
-        self.path = path or Settings.PATH
+        self.path = path or PATH
         self.env = {k: v for k, v in (env or {}).items() if v}
         self.git = {k: v for k, v in (git or {}).items() if v}
 
@@ -255,7 +255,7 @@ class Repo(object):
     @property
     def sleeptime(self):
         """ Time to sleep. """
-        return self._sleep or Settings.SLEEP
+        return self._sleep or SLEEP
 
     def diffs(self):
         """ Echo diff output and sleep. """
@@ -333,6 +333,6 @@ def diffapp(name, filename=None):
 def reset(filename=None):
     """ Remove settings. """
     try:
-        os.remove(filename or Settings.HOME)
+        os.remove(filename or HOME)
     except (OSError, IOError):
-        raise errors.SettingsError(filename or Settings.HOME)
+        raise errors.SettingsError(filename or HOME)
