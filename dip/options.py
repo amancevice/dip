@@ -41,7 +41,8 @@ def validate_secret(ctx, param, value):
 # pylint: disable=unused-argument
 def expand_home(ctx, param, value):
     """ Expand home argument to absolute path. """
-    return os.path.abspath(os.path.expanduser(value))
+    if value is not None:
+        return os.path.abspath(os.path.expanduser(value))
 
 
 # pylint: disable=unused-argument
