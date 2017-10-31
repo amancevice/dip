@@ -87,6 +87,9 @@ HOME = click.argument('HOME', callback=expand_home)
 KEYS = click.argument('KEYS', is_eager=True, nargs=-1)
 NAME = click.argument('NAME', type=Name())
 NAMES = click.argument('NAMES', nargs=-1, type=Name())
+EDIT = click.option('-e', '--edit',
+                    help='Edit settings (requires EDITOR to be set in ENV)',
+                    is_flag=True)
 ENV = click.option('-e', '--env',
                    callback=validate_env,
                    help='Optional ENV variable',

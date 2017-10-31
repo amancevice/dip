@@ -1,7 +1,17 @@
+import os
 import sys
 import tempfile
 
+import pytest
 from dip import utils
+
+
+def test_editor():
+    if 'EDITOR' in os.environ:
+        assert utils.editor() == os.environ['EDITOR']
+    else:
+        with pytest.raises(KeyError):
+            assert utils.editor()
 
 
 def test_piped_redirected():

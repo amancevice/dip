@@ -2,6 +2,7 @@
 dip CLI tool main entrypoint
 """
 import json
+import subprocess
 import sys
 
 import click
@@ -46,27 +47,34 @@ def dip():
 
 
 @dip.command('config')
+@options.EDIT
 @options.KEYS
 @clickerr
-def dip_config(keys):
+def dip_config(edit, keys):
     """ Show current dip configuration.
 
         \b
         dip config NAME             # Get NAME config dict
         dip config NAME git remote  # Get name of remote
     """
-    with settings.load() as cfg:
-        working = cfg.data
-        for key in keys:
-            try:
-                working = working[key]
-            except (KeyError, TypeError):
-                sys.exit(1)
+    if edit:
+        try:
+            subprocess.call([utils.editor(), settings.HOME])
+        except KeyError:
+            raise click.ClickException('EDITOR value not defined in ENV')
+    else:
+        with settings.load() as cfg:
+            working = cfg.data
+            for key in keys:
+                try:
+                    working = working[key]
+                except (KeyError, TypeError):
+                    sys.exit(1)
 
-        if isinstance(working, dict):
-            click.echo(json.dumps(working, indent=4, sort_keys=True))
-        else:
-            click.echo(working)
+            if isinstance(working, dict):
+                click.echo(json.dumps(working, indent=4, sort_keys=True))
+            else:
+                click.echo(working)
 
 
 # pylint: disable=too-many-arguments
