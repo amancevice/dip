@@ -280,6 +280,13 @@ class Repo(object):
             with indir(self.path):
                 yield subprocess.call(cmd)
 
+    def pull(self):
+        """ Pull from remote. """
+        # Pull remote
+        with indir(self.path):
+            cmd = ['git', 'pull', self.remotename, self.branch]
+            subprocess.call(cmd)
+
     def sleep(self):
         """ Sleep. """
         time.sleep(self.sleeptime)
