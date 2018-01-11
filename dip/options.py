@@ -43,6 +43,7 @@ def expand_home(ctx, param, value):
     """ Expand home argument to absolute path. """
     if value is not None:
         return os.path.abspath(os.path.expanduser(value))
+    return value
 
 
 # pylint: disable=unused-argument

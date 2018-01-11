@@ -36,3 +36,7 @@ def test_split_remote_no_branch():
 def test_split_remote_nones():
     ret = options.split_remote(mock.Mock(), mock.Mock(), None)
     assert ret == (None, None)
+
+
+def test_expand_home():
+    assert options.expand_home(None, None, None) is None

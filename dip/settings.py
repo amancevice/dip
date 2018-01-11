@@ -127,6 +127,7 @@ class Dip(collections.Mapping):
             branch = self.git.get('branch')
             sleep = self.git.get('sleep')
             return Repo(self.home, remote, branch, sleep)
+        return None
 
     @property
     def project(self):
