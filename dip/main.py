@@ -29,10 +29,15 @@ def clickerr(func):
 
 def warnsleep(app):
     """ Warn about app divergence and sleep. """
-    warn = "\n"\
-        "Local service has diverged from remote or is inaccessible.\n"\
-        "Sleeping for {}s\n".format(app.repo.sleeptime)
+    warn = '\n'\
+        'Local service has diverged from remote or is inaccessible.\n'\
+        'Sleeping for {}s\n'\
+        'CTRL-C to exit\n'.format(app.repo.sleeptime)
+    upgrade = 'dip upgrade {}'.format(app.name)
+    hint = 'Run `{}` to git-pull updates from remote\n'\
+        .format(colors.teal(upgrade))
     click.echo(colors.amber(warn), err=True)
+    click.echo(hint, err=True)
     app.repo.sleep()
 
 
@@ -209,4 +214,17 @@ def dip_uninstall(names):
                 cfg.uninstall(name)
                 click.echo("Uninstalled {name}".format(name=colors.red(name)))
             except KeyError:
+                pass
+
+
+@dip.command('upgrade')
+@options.NAMES
+@clickerr
+def dip_upgrade(names):
+    """ Upgrade CLI by pulling from git remote. """
+    for name in names:
+        with settings.getapp(name) as app:
+            try:
+                app.repo.pull()
+            except AttributeError:
                 pass
