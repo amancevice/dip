@@ -30,6 +30,12 @@ pip install dip
 
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
 
+## Upgrading from a git remote
+
+1. Follow the steps above to install your CLI with a remote
+2. If the remote moves ahead of the local, you will see a warning when executing CLI commands
+3. use `dip upgrade <service>` to pull changes from the remote
+
 ## Installing with ENV variables
 
 Use the `--env` option to install the CLI with an environment variable set. Use the `--secret` option to enter the environment variable in an interactive prompt where the input is hidden.
