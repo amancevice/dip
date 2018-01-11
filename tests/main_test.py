@@ -190,6 +190,7 @@ def test_show(mock_app):
 
 @mock.patch('dip.settings.getapp')
 def test_show_sleep(mock_app):
+    mock_app.return_value.__enter__.return_value.name = 'myapp'
     mock_app.return_value.__enter__.return_value.repo.sleeptime = 10
     mock_app.return_value.__enter__.return_value.diff.return_value = True
     mock_app.return_value.__enter__.return_value.definitions = iter(['TEST'])
@@ -197,7 +198,10 @@ def test_show_sleep(mock_app):
         assert result.exit_code == 0
         assert result.output == \
             '\nLocal service has diverged from remote or is inaccessible.\n'\
-            'Sleeping for 10s\n\n\nTEST\n\n'
+            'Sleeping for 10s\n'\
+            'CTRL-C to exit\n\n'\
+            'Run `dip upgrade myapp` to git-pull updates from remote\n\n\n'\
+            'TEST\n\n'
 
 
 @mock.patch('dip.settings.Settings.uninstall')
@@ -216,3 +220,21 @@ def test_uninstall_err(mock_load, mock_un):
     with invoke(main.dip_uninstall, ['fuzz']) as result:
         assert result.exit_code == 0
         mock_un.assert_not_called()
+
+
+@mock.patch('dip.settings.getapp')
+def test_upgrade(mock_get):
+    mock_app = mock.MagicMock()
+    mock_get.return_value.__enter__.return_value = mock_app
+    with invoke(main.dip_upgrade, ['fizz']) as result:
+        assert result.exit_code == 0
+        mock_app.repo.pull.assert_called_once_with()
+
+
+@mock.patch('dip.settings.getapp')
+def test_upgrade_err(mock_get):
+    mock_app = mock.MagicMock()
+    mock_app.repo = None
+    mock_get.return_value.__enter__.return_value = mock_app
+    with invoke(main.dip_upgrade, ['fizz']) as result:
+        assert result.exit_code == 0

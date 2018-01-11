@@ -170,6 +170,14 @@ def test_repo_diffs_err(mock_repo):
                     assert any(repo.diffs())
 
 
+@mock.patch('subprocess.call')
+def test_repo_pull(mock_call):
+    with mock.patch('dip.settings.indir'):
+        repo = settings.Repo('.', 'origin', 'master')
+        repo.pull()
+        mock_call.assert_called_once_with(['git', 'pull', 'origin', 'master'])
+
+
 def test_dip_init():
     ret = settings.Dip('dipex', '/path/to/docker/compose/dir')
     assert ret.name == 'dipex'
