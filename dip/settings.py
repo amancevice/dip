@@ -49,9 +49,9 @@ class Settings(collections.MutableMapping):
     def __len__(self):
         return len(self.data)
 
-    # pylint: disable=too-many-arguments
     def install(self, name, home, path=None, env=None, git=None):
         """ Install applicaton. """
+        # pylint: disable=too-many-arguments
         app = Dip(name, home, path, env, git)
         try:
             app.install()
@@ -86,8 +86,9 @@ class Settings(collections.MutableMapping):
 
 class Dip(collections.Mapping):
     """ Dip app. """
-    # pylint: disable=super-init-not-called,too-many-arguments
+    # pylint: disable=super-init-not-called
     def __init__(self, name, home, path=None, env=None, git=None):
+        # pylint: disable=too-many-arguments
         self.name = str(name)
         self.home = str(home)
         self.path = path or PATH

@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 setup(name='dip',
-      version='1.2.0',
+      version='1.3.0',
       author='amancevice',
       author_email='smallweirdnum@gmail.com',
       packages=['dip'],
@@ -23,8 +23,8 @@ setup(name='dip',
                    'Programming Language :: Python :: 3.5',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python'],
-      install_requires=['click>=6.7.0',
-                        'colored>=1.3.4',
-                        'docker-compose>=1.10.0',
-                        'gitpython>=2.1.3'],
+      install_requires=['click >= 6.7.0',
+                        'colored >= 1.3.4',
+                        'docker-compose >= 1.18.0',
+                        'gitpython >= 2.1.3'],
       entry_points={'console_scripts': ['dip=dip.main:dip']})

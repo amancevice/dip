@@ -93,7 +93,10 @@ def test_install(mock_ins, mock_load):
         mock_ins.assert_called_once_with(
             'fizz', '/test/path', '/path/to/bin',
             {'FIZZ': 'BUZZ'},
-            {'remote': 'origin', 'branch': 'master', 'sleep': 5})
+            {'remote': 'origin',
+             'branch': 'master',
+             'sleep': 5,
+             'interactive': False})
 
 
 @mock.patch('dip.settings.load')

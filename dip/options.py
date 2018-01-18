@@ -7,9 +7,9 @@ import re
 import click
 
 
-# pylint: disable=unused-argument
 def validate_env(ctx, param, value):
     """ Validate --env option. """
+    # pylint: disable=unused-argument
     environment = {}
     for val in value:
 
@@ -29,26 +29,34 @@ def validate_env(ctx, param, value):
     return environment
 
 
-# pylint: disable=unused-argument
 def validate_secret(ctx, param, value):
     """ Validate --secret option. """
+    # pylint: disable=unused-argument
     for val in value:
         if not re.match(r'^[A-Z_]+$', val):
             raise click.BadParameter("Use 'CAPITALS_AND_UNDERSCORES'")
     return value
 
 
-# pylint: disable=unused-argument
+def ensure_remote(ctx, param, value):
+    """ Ensure --remote is used. """
+    # pylint: disable=unused-argument
+    if value and ctx.params.get('remote') == (None, None):
+        raise click.BadParameter('Invalid without "-r" / "--remote" option')
+    return value
+
+
 def expand_home(ctx, param, value):
     """ Expand home argument to absolute path. """
+    # pylint: disable=unused-argument
     if value is not None:
         return os.path.abspath(os.path.expanduser(value))
     return value
 
 
-# pylint: disable=unused-argument
 def split_remote(ctx, param, value):
     """ Split remote/branch into tuple. """
+    # pylint: disable=unused-argument
     if value:
         try:
             remote, branch = value.split('/')
@@ -100,12 +108,17 @@ FORCE = click.option('-f', '--force',
                      help='Do not prompt',
                      is_flag=True,
                      prompt='Are you sure?')
+INTERACTIVE = click.option('-i', '--interactive',
+                           callback=ensure_remote,
+                           help='Prompt to upgrade instead of sleeping',
+                           is_flag=True)
 SECRET = click.option('-x', '--secret',
                       callback=validate_secret,
                       help='Set secret ENV',
                       multiple=True,
                       type=Env())
 SLEEP = click.option('-s', '--sleep',
+                     callback=ensure_remote,
                      help='Number of seconds to sleep',
                      type=click.INT)
 PATH = click.option('-p', '--path',
@@ -115,4 +128,5 @@ PATH = click.option('-p', '--path',
 REMOTE = click.option('-r', '--remote',
                       callback=split_remote,
                       help='Optional git remote/branch',
+                      is_eager=True,
                       type=Name())

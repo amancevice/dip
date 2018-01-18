@@ -29,16 +29,38 @@ def clickerr(func):
 
 def warnsleep(app):
     """ Warn about app divergence and sleep. """
+    # Warn about divergence
     warn = '\n'\
         'Local service has diverged from remote or is inaccessible.\n'\
         'Sleeping for {}s\n'\
         'CTRL-C to exit\n'.format(app.repo.sleeptime)
+    click.echo(colors.amber(warn), err=True)
+
+    # Give hint to upgrade
     upgrade = 'dip upgrade {}'.format(app.name)
     hint = 'Run `{}` to git-pull updates from remote\n'\
         .format(colors.teal(upgrade))
-    click.echo(colors.amber(warn), err=True)
     click.echo(hint, err=True)
+
+    # Sleep
     app.repo.sleep()
+
+
+def warnask(app):
+    """ Warn about app divergence and ask to upgrade. """
+    # Warn about divergence
+    warn = '\nLocal service has diverged from remote or is inaccessible.'
+    click.echo(colors.amber(warn), err=True)
+
+    # Ask to upgrade
+    upgrade = colors.teal(
+        'Would you like to attempt to upgrade before continuing?')
+    if not click.confirm(upgrade, default=True):
+        goodbye = 'Please resolve these changes before re-attempting.\n'
+        click.echo(goodbye, err=True)
+        sys.exit(1)
+    app.repo.pull()
+    click.echo(err=True)
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -82,17 +104,17 @@ def dip_config(edit, keys):
                 click.echo(working)
 
 
-# pylint: disable=too-many-arguments
 @dip.command('install')
 @options.NAME
 @options.HOME
+@options.INTERACTIVE
 @options.PATH
 @options.REMOTE
 @options.ENV
 @options.SECRET
 @options.SLEEP
 @clickerr
-def dip_install(name, home, path, remote, env, secret, sleep):
+def dip_install(name, home, interactive, path, remote, env, secret, sleep):
     """ Install CLI by name.
 
         \b
@@ -100,6 +122,7 @@ def dip_install(name, home, path, remote, env, secret, sleep):
         dip install fizz /path/to/dir        # Absolute path
         dip install fizz . -r origin/master  # Tracking git remote/branch
     """
+    # pylint: disable=too-many-arguments
     with settings.saveonexit() as cfg:
         # Interactively set ENV
         for sec in secret:
@@ -107,7 +130,10 @@ def dip_install(name, home, path, remote, env, secret, sleep):
 
         # Parse git config
         remote, branch = remote
-        git = {'remote': remote, 'branch': branch, 'sleep': sleep}
+        git = {'remote': remote,
+               'branch': branch,
+               'sleep': sleep,
+               'interactive': interactive}
 
         # Install
         app = cfg.install(name, home, path, env, git)
@@ -185,7 +211,9 @@ def dip_run(name, args):
     """ Run dip CLI. """
     with settings.diffapp(name) as app_diff:
         app, diff = app_diff
-        if diff:
+        if diff and app.git.get('interactive'):
+            warnask(app)
+        elif diff:
             warnsleep(app)
         app.run(*args)
 
