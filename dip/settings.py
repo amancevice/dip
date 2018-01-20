@@ -18,7 +18,7 @@ from dip import utils
 
 HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
 PATH = os.getenv('DIP_PATH', '/usr/local/bin')
-SLEEP = int(os.getenv('DIP_SLEEP') or '5')
+SLEEP = int(os.getenv('DIP_SLEEP') or '10')
 
 
 class Settings(collections.MutableMapping):
