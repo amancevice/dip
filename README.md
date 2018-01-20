@@ -21,6 +21,14 @@ pip install dip
 4. Run `dip install <service> .` to install the service as an executable command
 5. Run `dip uninstall <service> .` to remove the executable from the file system
 
+```bash
+mkdir example
+cd example
+touch docker-compose.yml
+# Edit docker-compose.yml to include 'dipex' service...
+dip install dipex .
+```
+
 ## Tracking a git remote
 
 1. Follow steps 1-3 above
@@ -28,7 +36,19 @@ pip install dip
 3. Run `dip install <service> . --remote <remote>/<branch>` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote/branch
 4. Run `dip uninstall <service>` to remove the executable from the file system
 
+```bash
+git clone git@github.com:owner/repo-with-docker-compose.git
+cd repo-with-docker-compose
+dip install dipex . --remote origin/master
+```
+
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
+
+Alternatively, use the `--interactive` flag to prompt the user to upgrade instead of sleeping.
+
+```bash
+dip install dipex . --remote origin/master --interactive
+```
 
 ## Upgrading from a git remote
 
