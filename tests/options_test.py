@@ -40,3 +40,10 @@ def test_split_remote_nones():
 
 def test_expand_home():
     assert options.expand_home(None, None, None) is None
+
+
+def test_ensure_remote():
+    ctx = mock.MagicMock()
+    ctx.params = {'remote': (None, None)}
+    with pytest.raises(click.BadParameter):
+        options.ensure_remote(ctx, None, True)
