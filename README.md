@@ -42,12 +42,14 @@ cd repo-with-docker-compose
 dip install dipex . --remote origin/master
 ```
 
-If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a diff message and the CLI will sleep for 10s.
+If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a prompt asking if the user wishes to upgrade (git pull).
 
-Alternatively, use the `--interactive` flag to prompt the user to upgrade instead of sleeping.
+If the user declines to upgrade he/she must resolve the conflict before continuing.
+
+Alternatively, use the `--sleep` option to show the user the diff, then sleep for the provided time (in seconds) instead of waiting on user input.
 
 ```bash
-dip install dipex . --remote origin/master --interactive
+dip install dipex . --remote origin/master --sleep 10
 ```
 
 ## Upgrading from a git remote
