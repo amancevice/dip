@@ -18,7 +18,6 @@ from dip import utils
 
 HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
 PATH = os.getenv('DIP_PATH', '/usr/local/bin')
-SLEEP = int(os.getenv('DIP_SLEEP') or '10')
 
 
 class Settings(collections.MutableMapping):
@@ -183,7 +182,10 @@ class Dip(collections.Mapping):
             os.remove(os.path.join(self.path, self.name))
         except (OSError, IOError):
             pass
-        self.project.networks.remove()
+        try:
+            self.project.networks.remove()
+        except compose.config.errors.ConfigurationError:
+            pass
 
     def validate(self, skipgit=False):
         """ Validate git repo and compose project. """
@@ -257,7 +259,7 @@ class Repo(object):
     @property
     def sleeptime(self):
         """ Time to sleep. """
-        return self._sleep or SLEEP
+        return self._sleep or 0
 
     def diffs(self):
         """ Echo diff output and sleep. """

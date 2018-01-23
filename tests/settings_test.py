@@ -130,7 +130,7 @@ def test_repo_branch_active(mock_branch):
 
 def test_repo_sleeptime():
     repo = settings.Repo('.', 'origin')
-    assert repo.sleeptime == settings.SLEEP
+    assert repo.sleeptime == 0
 
 
 @mock.patch('time.sleep')
@@ -355,12 +355,21 @@ def test_dip_uninstall(mock_proj, mock_rm):
 
 @mock.patch('os.remove')
 @mock.patch('compose.cli.command.get_project')
-def test_dip_uninstall_err(mock_proj, mock_rm):
+def test_dip_uninstall_os_err(mock_proj, mock_rm):
     mock_rm.side_effect = OSError
     app = settings.Dip('dipex', '/path/to/docker/compose/dir', '/bin')
     app.uninstall()
     mock_rm.assert_called_once_with('/bin/dipex')
     mock_proj.return_value.networks.remove.assert_called_once_with()
+
+
+@mock.patch('os.remove')
+@mock.patch('compose.cli.command.get_project')
+def test_dip_uninstall_compose_err(mock_proj, mock_rm):
+    mock_proj.side_effect = compose.config.errors.ConfigurationError('')
+    app = settings.Dip('dipex', '/path/to/docker/compose/dir', '/bin')
+    app.uninstall()
+    mock_rm.assert_called_once_with('/bin/dipex')
 
 
 @mock.patch('compose.cli.command.get_project')

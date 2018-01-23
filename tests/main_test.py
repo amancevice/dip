@@ -8,6 +8,7 @@ import mock
 import pytest
 
 import dip
+from dip import colors
 from dip import errors
 from dip import main
 from dip import settings
@@ -95,8 +96,7 @@ def test_install(mock_ins, mock_load):
             {'FIZZ': 'BUZZ'},
             {'remote': 'origin',
              'branch': 'master',
-             'sleep': 5,
-             'interactive': False})
+             'sleep': 5})
 
 
 @mock.patch('dip.settings.load')
@@ -172,13 +172,31 @@ def test_reset_err(mock_rm):
         assert result.exit_code != 0
 
 
-@mock.patch('dip.settings.getapp')
-def test_run(mock_app):
+@mock.patch('dip.main.warnask')
+@mock.patch('dip.settings.diffapp')
+def test_run_ask(mock_diffapp, mock_ask):
+    mock_app = mock.MagicMock()
+    mock_app.git = {}
+    mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',
                                '--flag']) as result:
-        mock_app.return_value.__enter__.return_value.run\
-            .assert_called_once_with('--opt1', 'val1', '--flag')
+        mock_ask.assert_called_once_with(mock_app)
+        mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
+        assert result.exit_code == 0
+
+
+@mock.patch('dip.main.warnsleep')
+@mock.patch('dip.settings.diffapp')
+def test_run_sleep(mock_diffapp, mock_ask):
+    mock_app = mock.MagicMock()
+    mock_app.git = {'sleep': 10}
+    mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
+    with invoke(main.dip_run, ['fizz', '--',
+                               '--opt1', 'val1',
+                               '--flag']) as result:
+        mock_ask.assert_called_once_with(mock_app)
+        mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
         assert result.exit_code == 0
 
 
@@ -241,3 +259,27 @@ def test_upgrade_err(mock_get):
     mock_get.return_value.__enter__.return_value = mock_app
     with invoke(main.dip_upgrade, ['fizz']) as result:
         assert result.exit_code == 0
+
+
+@mock.patch('sys.exit')
+@mock.patch('click.confirm')
+def test_warnask_no(mock_confirm, mock_exit):
+    mock_confirm.return_value = False
+    mock_app = mock.MagicMock()
+    main.warnask(mock_app)
+    mock_confirm.assert_called_once_with(
+        colors.teal('Would you like to attempt to upgrade before continuing?'))
+    mock_exit.assert_called_once_with(1)
+    mock_app.repo.pull.assert_not_called()
+
+
+@mock.patch('sys.exit')
+@mock.patch('click.confirm')
+def test_warnask_yes(mock_confirm, mock_exit):
+    mock_confirm.return_value = True
+    mock_app = mock.MagicMock()
+    main.warnask(mock_app)
+    mock_confirm.assert_called_once_with(
+        colors.teal('Would you like to attempt to upgrade before continuing?'))
+    mock_exit.assert_not_called()
+    mock_app.repo.pull.assert_called_once_with()
