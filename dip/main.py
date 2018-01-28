@@ -3,7 +3,6 @@ dip CLI tool main entrypoint
 """
 import json
 import subprocess
-import sys
 
 import click
 import docker
@@ -97,7 +96,7 @@ def dip_config(edit, keys):
                 try:
                     working = working[key]
                 except (KeyError, TypeError):
-                    sys.exit(1)
+                    raise SystemExit(1)
 
             if isinstance(working, dict):
                 click.echo(json.dumps(working, indent=4, sort_keys=True))
@@ -188,7 +187,7 @@ def dip_pull(name):
         except docker.errors.APIError:
             err = "Could not pull '{}' image".format(name)
             click.echo(colors.red(err), err=True)
-        sys.exit(1)
+        raise SystemExit(1)
 
 
 @dip.command('reset')
