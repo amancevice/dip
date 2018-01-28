@@ -261,25 +261,23 @@ def test_upgrade_err(mock_get):
         assert result.exit_code == 0
 
 
-@mock.patch('sys.exit')
 @mock.patch('click.confirm')
-def test_warnask_no(mock_confirm, mock_exit):
+def test_warnask_no(mock_confirm):
     mock_confirm.return_value = False
     mock_app = mock.MagicMock()
-    main.warnask(mock_app)
-    mock_confirm.assert_called_once_with(
-        colors.teal('Would you like to attempt to upgrade before continuing?'))
-    mock_exit.assert_called_once_with(1)
+    with pytest.raises(SystemExit):
+        main.warnask(mock_app)
+    mock_confirm.assert_has_calls([
+        mock.call(colors.teal('Attempt to upgrade before continuing?')),
+        mock.call(colors.teal('Continue without upgrading?'))])
     mock_app.repo.pull.assert_not_called()
 
 
-@mock.patch('sys.exit')
 @mock.patch('click.confirm')
-def test_warnask_yes(mock_confirm, mock_exit):
+def test_warnask_yes(mock_confirm):
     mock_confirm.return_value = True
     mock_app = mock.MagicMock()
     main.warnask(mock_app)
     mock_confirm.assert_called_once_with(
-        colors.teal('Would you like to attempt to upgrade before continuing?'))
-    mock_exit.assert_not_called()
+        colors.teal('Attempt to upgrade before continuing?'))
     mock_app.repo.pull.assert_called_once_with()
