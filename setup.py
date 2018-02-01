@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 setup(name='dip',
-      version='1.3.3',
+      version='1.3.4a0',
       author='amancevice',
       author_email='smallweirdnum@gmail.com',
       packages=['dip'],
