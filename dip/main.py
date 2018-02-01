@@ -53,16 +53,16 @@ def warnask(app):
 
     # Ask to upgrade
     upgrade = colors.teal('Attempt to upgrade before continuing?')
-    if not click.confirm(upgrade):
+    if click.confirm(upgrade):
+        # Upgrade
+        app.repo.pull()
+        click.echo(err=True)
+    else:
         override = colors.teal('Continue without upgrading?')
         if not click.confirm(override):
             goodbye = 'Please resolve these changes before re-attempting.\n'
             click.echo(goodbye, err=True)
             raise SystemExit(1)
-
-    # Upgrade
-    app.repo.pull()
-    click.echo(err=True)
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
