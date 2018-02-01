@@ -19,5 +19,5 @@ deploy:
     secure: ubyR2IB6K+49IrnR/Vms4UYxNuOyzvp7IQL8CFBpGNEuEXxWpms8LG1JtSBE0Pc66W5Mu/gmgkW2+N6zbi3T7KXNKs5IYlYJn0p/KdqLU+YhURtESqblKcGmSVyJ4hebCAnc0l+avh0IqcYifNGDhymiMkZvAHDvq0Wq238K2iUbCR7kCkc67yGU7IjIWV6Bpcm5lbP1XQwWCkzwWWNxgyoj1+zg7Bw2J3Bs9cuh2NRnbKbrcDyyEi1XERpx3SWf9m7rEZ99NsJC6HMmSmypK4MpUOhHVjuGzTS7SQOgmGJTYgYpalE/5BKn6g5nF3GQwT65SvQ3F3m4MT/aHGHyeCd999X9/uataNhViHCAhKmkAfSFMN9EUa05rIQJW62YC61h0gP1k24qiKV5Il2LjNiFn5vNYfa3flTEs/lK5GWtLgiAEIN77Q+niCemQks/QZHFBmkUbrEprWRPI/7ZBhfZY7n79eFBUwoEx5MCVDN/LNnBSWqXWeSodqKC2QXIfgBtq+3FqPnpmhBadGcu7gm0KTgJnHwEuy+rCOd7xeH/PO1MAHeyUujZn2qvJDRIGGb8rYVrgTEQqzdLLXfBPVOZU/5TA7o0GNiPwK4VXPfRSziR+z1wgWNtFWGrvoz4m1fhH71rFvYlpaLahdI/VcFNzXQtSPlFbzKj368ugeo=
   on:
     tags: true
+    distributions: sdist bdist_wheel
     repo: amancevice/dip
-    python: '3.6'
