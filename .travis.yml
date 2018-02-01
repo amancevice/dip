@@ -20,3 +20,4 @@ deploy:
   on:
     tags: true
     repo: amancevice/dip
+    python: '3.6'
