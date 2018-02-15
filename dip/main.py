@@ -70,7 +70,12 @@ def warnask(app):
 def dip():
     """ Install CLIs using docker-compose.
 
-        See https://github.com/amancevice/dip for details & instructions.
+        The following ENV variables are supported by `dip`:
+
+        :DIP_HOME: The location of the dip settings.json file
+        :DIP_PATH: The default location of installed executables
+
+        See https://github.com/amancevice/dip for more information.
     """
     pass  # pragma: no cover
 
