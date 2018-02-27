@@ -187,8 +187,10 @@ def dip_pull(name):
     """ Pull updates from docker-compose. """
     with settings.diffapp(name) as app_diff:
         app, diff = app_diff
-        if diff:
+        if diff and app.git.get('sleep'):
             warnsleep(app)
+        elif diff:
+            warnask(app)
         try:
             return app.service.pull()
         except docker.errors.APIError:
@@ -228,8 +230,10 @@ def dip_show(name):
     """ Show service configuration. """
     with settings.diffapp(name) as app_diff:
         app, diff = app_diff
-        if diff:
+        if diff and app.git.get('sleep'):
             warnsleep(app)
+        elif diff:
+            warnask(app)
         for definition in app.definitions:
             click.echo("\n{}\n".format(definition.strip()))
 

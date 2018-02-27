@@ -137,6 +137,18 @@ def test_pull(mock_load):
         assert result.exit_code == 0
 
 
+@mock.patch('dip.main.warnask')
+@mock.patch('dip.settings.diffapp')
+def test_pull_ask(mock_diffapp, mock_ask):
+    mock_app = mock.MagicMock()
+    mock_app.git = {}
+    mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
+    with invoke(main.dip_pull, ['fizz']) as result:
+        mock_ask.assert_called_once_with(mock_app)
+        mock_app.service.pull.assert_called_once_with()
+        assert result.exit_code == 0
+
+
 @mock.patch('dip.settings.getapp')
 def test_pull_err(mock_load):
     mock_load.return_value.__enter__\
@@ -205,6 +217,19 @@ def test_show(mock_app):
     mock_app.return_value.__enter__.return_value.diff.return_value = False
     mock_app.return_value.__enter__.return_value.definitions = iter(['TEST'])
     with invoke(main.dip_show, ['fizz']) as result:
+        assert result.exit_code == 0
+        assert result.output == '\nTEST\n\n'
+
+
+@mock.patch('dip.main.warnask')
+@mock.patch('dip.settings.diffapp')
+def test_show_ask(mock_diffapp, mock_ask):
+    mock_app = mock.MagicMock()
+    mock_app.git = {}
+    mock_app.definitions = iter(['TEST'])
+    mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
+    with invoke(main.dip_show, ['fizz']) as result:
+        mock_ask.assert_called_once_with(mock_app)
         assert result.exit_code == 0
         assert result.output == '\nTEST\n\n'
 
