@@ -89,3 +89,6 @@ ENV/
 .ropeproject
 
 *.json
+
+# py.test
+.pytest_cache/
