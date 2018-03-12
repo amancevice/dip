@@ -2,8 +2,16 @@ import os
 import sys
 import tempfile
 
+import mock
 import pytest
 from dip import utils
+
+
+@mock.patch('os.makedirs')
+@mock.patch('os.path.exists')
+def test_dip_home(mock_exists, mock_mkdirs):
+    mock_exists.return_value = False
+    assert utils.dip_home('DIP_HOME', '~/.dip') == os.path.expanduser('~/.dip')
 
 
 def test_editor():

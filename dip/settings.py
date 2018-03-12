@@ -16,7 +16,7 @@ import git as pygit
 from dip import errors
 from dip import utils
 
-HOME = os.getenv('DIP_HOME', utils.pkgpath('settings.json'))
+HOME = utils.dip_home('DIP_HOME', '~/.dip')
 PATH = os.getenv('DIP_PATH', '/usr/local/bin')
 
 
@@ -25,9 +25,10 @@ class Settings(collections.MutableMapping):
     # pylint: disable=super-init-not-called
     def __init__(self, *args, **kwargs):
         self.data = dict(*args, **kwargs)
+        self.filepath = os.path.join(HOME, 'settings.json')
 
     def __str__(self):
-        return HOME
+        return utils.contractuser(self.filepath)
 
     def __repr__(self):
         return "Settings({self})".format(self=self)
@@ -58,23 +59,25 @@ class Settings(collections.MutableMapping):
             self[name] = app
         return app
 
-    def load(self, filename=None):
+    def load(self, filepath=None):
         """ Load settings. """
+        filepath = filepath or self.filepath
         try:
-            with open(filename or HOME) as settings:
+            with open(filepath) as settings:
                 self.data = json.loads(settings.read())
         except (OSError, IOError):
-            self.save(filename)
+            self.save(filepath)
         except ValueError:
-            raise errors.SettingsError(HOME)
+            raise errors.SettingsError(filepath)
 
-    def save(self, filename=None):
+    def save(self, filepath=None):
         """ Save settings. """
+        filepath = filepath or self.filepath
         try:
-            with open(filename or HOME, 'w') as settings:
+            with open(filepath, 'w') as settings:
                 settings.write(json.dumps(self.data, indent=4, sort_keys=True))
         except (OSError, IOError, ValueError):
-            raise errors.SettingsError(HOME)
+            raise errors.SettingsError(filepath)
 
     def uninstall(self, name):
         """ Uninstall applicaton. """
@@ -341,9 +344,10 @@ def diffapp(name, filename=None):
         yield app, app.diff()
 
 
-def reset(filename=None):
+def reset(filepath=None):
     """ Remove settings. """
+    filepath = filepath or os.path.join(HOME, 'settings.json')
     try:
-        os.remove(filename or HOME)
+        os.remove(filepath)
     except (OSError, IOError):
-        raise errors.SettingsError(filename or HOME)
+        raise errors.SettingsError(filepath)

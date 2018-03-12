@@ -6,14 +6,30 @@ import re
 import stat
 import sys
 
-import pkg_resources
-
 
 def contractuser(path):
     """ Shrink user home back to ~ """
     userhome = os.path.expanduser('~')
     userpath = re.sub(r'^{}'.format(userhome), '~', path)
     return userpath
+
+
+def dip_home(envvar, default='~/.dip'):
+    """ Helper to get path to settings.json file. """
+    try:
+        return os.environ[envvar]
+    except KeyError:
+        # Find home in order of preference
+        homes = ['~/.dip', '/etc/dip', '/usr/local/etc/dip']
+        for home in homes:
+            path = os.path.expanduser(home)
+            if os.path.exists(path):
+                return path
+
+        # Create home
+        path = os.path.expanduser(default)
+        os.makedirs(path)
+        return path
 
 
 def editor():
@@ -24,13 +40,6 @@ def editor():
 def notty():
     """ Helper to determine if TTY is needed. """
     return not piped_redirected(sys.stdin) and piped_redirected(sys.stdout)
-
-
-def pkgpath(filename):
-    """ Helper to return abspath of dip file. """
-    path = os.path.join(__package__, filename)
-    root = pkg_resources.Requirement.parse(__package__)
-    return pkg_resources.resource_filename(root, path)
 
 
 def piped_redirected(stream):

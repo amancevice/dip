@@ -422,12 +422,11 @@ def test_dip_val_no_such_path_error(mock_repo):
 
 
 def test_settings_str():
-    assert str(settings.Settings()) == settings.HOME
+    assert str(settings.Settings()) == '~/.dip/settings.json'
 
 
 def test_settings_repr():
-    assert repr(settings.Settings()) == \
-        "Settings({home})".format(home=settings.HOME)
+    assert repr(settings.Settings()) == 'Settings(~/.dip/settings.json)'
 
 
 def test_settings_getitem():
