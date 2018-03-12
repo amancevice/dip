@@ -92,13 +92,13 @@ def dip_config(edit, keys):
         dip config NAME             # Get NAME config dict
         dip config NAME git remote  # Get name of remote
     """
-    if edit:
-        try:
-            subprocess.call([utils.editor(), settings.HOME])
-        except KeyError:
-            raise click.ClickException('EDITOR value not defined in ENV')
-    else:
-        with settings.load() as cfg:
+    with settings.load() as cfg:
+        if edit:
+            try:
+                subprocess.call([utils.editor(), cfg.filepath])
+            except KeyError:
+                raise click.ClickException('EDITOR value not defined in ENV')
+        else:
             working = cfg.data
             for key in keys:
                 try:

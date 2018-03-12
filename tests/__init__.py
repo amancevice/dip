@@ -18,6 +18,6 @@ SETTINGS = {'fizz': {'name': 'fizz',
 
 # pylint: disable=too-many-ancestors
 class MockSettings(settings.Settings):
-    def __init__(self, filename=None):
+    def __init__(self):
         super(MockSettings, self).__init__(**SETTINGS)
-        self.filename = filename or '/path/to/settings.json'
+        self.filepath = '/path/to/settings.json'

@@ -40,18 +40,23 @@ def test_version():
             "dip, version {vsn}\n".format(vsn=dip.__version__)
 
 
+@mock.patch('dip.settings.load')
 @mock.patch('subprocess.call')
 @mock.patch('dip.utils.editor')
-def test_config_edit(mock_ed, mock_call):
+def test_config_edit(mock_ed, mock_call, mock_load):
     mock_ed.return_value = '/bin/vim'
+    mock_load.return_value.__enter__.return_value = MockSettings()
     with invoke(main.dip_config, ['--edit']) as result:
-        mock_call.assert_called_once_with(['/bin/vim', settings.HOME])
+        mock_call.assert_called_once_with(
+            ['/bin/vim', '/path/to/settings.json'])
 
 
+@mock.patch('dip.settings.load')
 @mock.patch('subprocess.call')
 @mock.patch('dip.utils.editor')
-def test_config_edit(mock_ed, mock_call):
+def test_config_edit_err(mock_ed, mock_call, mock_load):
     mock_ed.side_effect = KeyError
+    mock_load.return_value.__enter__.return_value = MockSettings()
     with invoke(main.dip_config, ['--edit']) as result:
         mock_call.assert_not_called()
 
