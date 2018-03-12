@@ -72,6 +72,7 @@ def dip():
 
         The following ENV variables are supported by `dip`:
 
+        \b
         :DIP_HOME: The location of the dip settings.json file
         :DIP_PATH: The default location of installed executables
 
