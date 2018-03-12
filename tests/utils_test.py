@@ -14,6 +14,12 @@ def test_dip_home(mock_exists, mock_mkdirs):
     assert utils.dip_home('DIP_HOME', '~/.dip') == os.path.expanduser('~/.dip')
 
 
+@mock.patch('os.path.exists')
+def test_dip_home_exists(mock_exists):
+    mock_exists.return_value = True
+    assert utils.dip_home('DIP_HOME', '~/.dip') == os.path.expanduser('~/.dip')
+
+
 def test_editor():
     if 'EDITOR' in os.environ:
         assert utils.editor() == os.environ['EDITOR']

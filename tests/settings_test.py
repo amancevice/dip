@@ -11,6 +11,8 @@ from dip import errors
 from dip import settings
 from . import MockSettings
 
+settings.HOME = os.path.expanduser('~/.dip')
+
 
 @mock.patch('dip.settings.Settings.load')
 @mock.patch('dip.settings.Settings.save')
