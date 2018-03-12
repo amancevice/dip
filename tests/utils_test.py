@@ -7,17 +7,16 @@ import pytest
 from dip import utils
 
 
-@mock.patch('os.makedirs')
 @mock.patch('os.path.exists')
-def test_dip_home(mock_exists, mock_mkdirs):
+def test_dip_home(mock_exists):
     mock_exists.return_value = False
-    assert utils.dip_home('DIP_HOME', '~/.dip') == os.path.expanduser('~/.dip')
+    assert utils.dip_home('DIP_HOME') == utils.pkgpath()
 
 
 @mock.patch('os.path.exists')
 def test_dip_home_exists(mock_exists):
     mock_exists.return_value = True
-    assert utils.dip_home('DIP_HOME', '~/.dip') == os.path.expanduser('~/.dip')
+    assert utils.dip_home('DIP_HOME') == os.path.expanduser('~/.dip')
 
 
 def test_editor():

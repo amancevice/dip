@@ -16,7 +16,7 @@ import git as pygit
 from dip import errors
 from dip import utils
 
-HOME = utils.dip_home('DIP_HOME', '~/.dip')
+HOME = utils.dip_home('DIP_HOME')
 PATH = os.getenv('DIP_PATH', '/usr/local/bin')
 
 

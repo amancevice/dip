@@ -5,6 +5,7 @@ import os
 import re
 import stat
 import sys
+import pkg_resources
 
 
 def contractuser(path):
@@ -14,7 +15,7 @@ def contractuser(path):
     return userpath
 
 
-def dip_home(envvar, default='~/.dip'):
+def dip_home(envvar='DIP_HOME'):
     """ Helper to get path to settings.json file. """
     try:
         return os.environ[envvar]
@@ -26,10 +27,8 @@ def dip_home(envvar, default='~/.dip'):
             if os.path.exists(path):
                 return path
 
-        # Create home
-        path = os.path.expanduser(default)
-        os.makedirs(path)
-        return path
+        # Use package home as last-resort
+        return pkgpath()
 
 
 def editor():
@@ -46,3 +45,9 @@ def piped_redirected(stream):
     """ Determine if stream is piped or redirected. """
     mode = os.fstat(stream.fileno()).st_mode
     return stat.S_ISFIFO(mode) or stat.S_ISREG(mode)
+
+
+def pkgpath():
+    """ Helper to return abspath of dip file. """
+    root = pkg_resources.Requirement.parse(__package__)
+    return pkg_resources.resource_filename(root, __package__)
