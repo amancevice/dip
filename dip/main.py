@@ -120,8 +120,9 @@ def dip_config(edit, keys):
 @options.ENV
 @options.SECRET
 @options.SLEEP
+@options.NO_EXE
 @clickerr
-def dip_install(name, home, path, remote, env, secret, sleep):
+def dip_install(name, home, path, remote, env, secret, sleep, no_exe):
     """ Install CLI by name.
 
         \b
@@ -140,7 +141,10 @@ def dip_install(name, home, path, remote, env, secret, sleep):
         git = {'remote': remote, 'branch': branch, 'sleep': sleep}
 
         # Install
-        app = cfg.install(name, home, path, env, git)
+        if no_exe:
+            app = cfg[name] = dip.Dip(name, home, path, env, git)
+        else:
+            app = cfg.install(name, home, path, env, git)
 
         # Validate configuration
         app.validate()

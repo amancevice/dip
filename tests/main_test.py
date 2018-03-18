@@ -104,6 +104,19 @@ def test_install(mock_ins, mock_load):
              'sleep': 5})
 
 
+@mock.patch('dip.settings.saveonexit')
+@mock.patch('dip.settings.Settings.install')
+def test_install_no_exe(mock_ins, mock_load):
+    mock_load.return_value.__enter__.return_value = MockSettings()
+    with invoke(main.dip_install, ['fizz', '/test/path',
+                                   '--env', 'FIZZ=BUZZ',
+                                   '--path', '/path/to/bin',
+                                   '--remote', 'origin/master',
+                                   '--sleep', '5',
+                                   '--no-exe']):
+        mock_ins.assert_not_called()
+
+
 @mock.patch('dip.settings.load')
 @mock.patch('git.Repo')
 def test_list(mock_repo, mock_load):
