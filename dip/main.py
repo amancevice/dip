@@ -142,7 +142,7 @@ def dip_install(name, home, path, remote, env, secret, sleep, no_exe):
 
         # Install
         if no_exe:
-            app = cfg[name] = dip.Dip(name, home, path, env, git)
+            app = cfg[name] = settings.Dip(name, home, path, env, git)
         else:
             app = cfg.install(name, home, path, env, git)
 
