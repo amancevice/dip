@@ -89,7 +89,7 @@ def test_config_err(mock_load):
 
 @mock.patch('dip.settings.saveonexit')
 @mock.patch('dip.settings.Settings.install')
-def test_install(mock_ins, mock_load):
+def test_install_sleep(mock_ins, mock_load):
     mock_load.return_value.__enter__.return_value = MockSettings()
     with invoke(main.dip_install, ['fizz', '/test/path',
                                    '--env', 'FIZZ=BUZZ',
@@ -101,7 +101,26 @@ def test_install(mock_ins, mock_load):
             {'FIZZ': 'BUZZ'},
             {'remote': 'origin',
              'branch': 'master',
-             'sleep': 5})
+             'sleep': 5,
+             'auto_upgrade': False})
+
+
+@mock.patch('dip.settings.saveonexit')
+@mock.patch('dip.settings.Settings.install')
+def test_install_autoup(mock_ins, mock_load):
+    mock_load.return_value.__enter__.return_value = MockSettings()
+    with invoke(main.dip_install, ['fizz', '/test/path',
+                                   '--env', 'FIZZ=BUZZ',
+                                   '--path', '/path/to/bin',
+                                   '--remote', 'origin/master',
+                                   '--auto-upgrade']):
+        mock_ins.assert_called_once_with(
+            'fizz', '/test/path', '/path/to/bin',
+            {'FIZZ': 'BUZZ'},
+            {'remote': 'origin',
+             'branch': 'master',
+             'sleep': None,
+             'auto_upgrade': True})
 
 
 @mock.patch('dip.settings.saveonexit')
@@ -206,7 +225,8 @@ def test_reset_err(mock_rm):
 @mock.patch('dip.settings.diffapp')
 def test_run_ask(mock_diffapp, mock_ask):
     mock_app = mock.MagicMock()
-    mock_app.git = {}
+    mock_app.auto_upgrade = False
+    mock_app.sleep = False
     mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',
@@ -220,12 +240,26 @@ def test_run_ask(mock_diffapp, mock_ask):
 @mock.patch('dip.settings.diffapp')
 def test_run_sleep(mock_diffapp, mock_ask):
     mock_app = mock.MagicMock()
-    mock_app.git = {'sleep': 10}
+    mock_app.sleep = 10
     mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',
                                '--flag']) as result:
         mock_ask.assert_called_once_with(mock_app)
+        mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
+        assert result.exit_code == 0
+
+
+@mock.patch('dip.settings.diffapp')
+def test_run_autoupgrade(mock_diffapp):
+    mock_app = mock.MagicMock()
+    mock_app.auto_upgrade = True
+    mock_app.sleep = False
+    mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
+    with invoke(main.dip_run, ['fizz', '--',
+                               '--opt1', 'val1',
+                               '--flag']) as result:
+        mock_app.repo.pull.assert_called_once_with()
         mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
         assert result.exit_code == 0
 

@@ -123,6 +123,18 @@ class Dip(collections.Mapping):
         return 3 + bool(self.env) + bool(self.git)
 
     @property
+    def auto_upgrade(self):
+        """ Get auto-upgrade True/False value. """
+        return self.git.get('auto_upgrade')
+
+    @property
+    def definitions(self):
+        """ Get compose file contents as string. """
+        for cfg in compose.config.config.get_default_config_files(self.home):
+            with open(cfg) as compose_file:
+                yield compose_file.read()
+
+    @property
     def repo(self):
         """ Get git repository object. """
         remote = self.git.get('remote')
@@ -143,11 +155,9 @@ class Dip(collections.Mapping):
         return self.project.get_service(self.name)
 
     @property
-    def definitions(self):
-        """ Get compose file contents as string. """
-        for cfg in compose.config.config.get_default_config_files(self.home):
-            with open(cfg) as compose_file:
-                yield compose_file.read()
+    def sleep(self):
+        """ Get sleep time. """
+        return self.git.get('sleep')
 
     def diff(self):
         """ Diff remote configuration. """

@@ -120,9 +120,11 @@ def dip_config(edit, keys):
 @options.ENV
 @options.SECRET
 @options.SLEEP
+@options.AUTO_UPGRADE
 @options.NO_EXE
 @clickerr
-def dip_install(name, home, path, remote, env, secret, sleep, no_exe):
+def dip_install(name, home, path, remote, env, secret, sleep, auto_upgrade,
+                no_exe):
     """ Install CLI by name.
 
         \b
@@ -138,7 +140,10 @@ def dip_install(name, home, path, remote, env, secret, sleep, no_exe):
 
         # Parse git config
         remote, branch = remote
-        git = {'remote': remote, 'branch': branch, 'sleep': sleep}
+        git = {'remote': remote,
+               'branch': branch,
+               'sleep': sleep,
+               'auto_upgrade': auto_upgrade}
 
         # Install
         if no_exe:
@@ -221,8 +226,10 @@ def dip_run(name, args):
     """ Run dip CLI. """
     with settings.diffapp(name) as app_diff:
         app, diff = app_diff
-        if diff and app.git.get('sleep'):
+        if diff and app.sleep:
             warnsleep(app)
+        elif diff and app.auto_upgrade:
+            app.repo.pull()
         elif diff:
             warnask(app)
         app.run(*args)

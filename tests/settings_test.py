@@ -510,3 +510,13 @@ def test_settings_uninstall(mock_uninstall):
         cfg = MockSettings()
         cfg.uninstall('fizz')
         mock_uninstall.assert_called_once_with()
+
+
+def test_dip_auto_upgrade():
+    app = settings.Dip('dipex', '/path/to/docker/compose/dir')
+    assert app.auto_upgrade is None
+
+
+def test_dip_sleep():
+    app = settings.Dip('dipex', '/path/to/docker/compose/dir')
+    assert app.sleep is None
