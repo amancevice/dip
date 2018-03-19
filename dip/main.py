@@ -65,6 +65,17 @@ def warnask(app):
             raise SystemExit(1)
 
 
+def warnupgrade(app):
+    """ Warn about app divergence and do upgrade. """
+    # Warn about divergence
+    warn = '\nLocal service has diverged from remote or is inaccessible.'
+    click.echo(colors.amber(warn), err=True)
+
+    # Ask to upgrade
+    click.echo(colors.teal('Attempting to auto-upgrade'), err=True)
+    app.repo.pull()
+
+
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, '-v', '--version')
 def dip():
@@ -229,7 +240,7 @@ def dip_run(name, args):
         if diff and app.sleep:
             warnsleep(app)
         elif diff and app.auto_upgrade:
-            app.repo.pull()
+            warnupgrade(app)
         elif diff:
             warnask(app)
         app.run(*args)

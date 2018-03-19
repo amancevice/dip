@@ -238,20 +238,21 @@ def test_run_ask(mock_diffapp, mock_ask):
 
 @mock.patch('dip.main.warnsleep')
 @mock.patch('dip.settings.diffapp')
-def test_run_sleep(mock_diffapp, mock_ask):
+def test_run_sleep(mock_diffapp, mock_sleep):
     mock_app = mock.MagicMock()
     mock_app.sleep = 10
     mock_diffapp.return_value.__enter__.return_value = (mock_app, 'DIFF')
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',
                                '--flag']) as result:
-        mock_ask.assert_called_once_with(mock_app)
+        mock_sleep.assert_called_once_with(mock_app)
         mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
         assert result.exit_code == 0
 
 
+@mock.patch('dip.main.warnupgrade')
 @mock.patch('dip.settings.diffapp')
-def test_run_autoupgrade(mock_diffapp):
+def test_run_autoupgrade(mock_diffapp, mock_autoup):
     mock_app = mock.MagicMock()
     mock_app.auto_upgrade = True
     mock_app.sleep = False
@@ -259,7 +260,7 @@ def test_run_autoupgrade(mock_diffapp):
     with invoke(main.dip_run, ['fizz', '--',
                                '--opt1', 'val1',
                                '--flag']) as result:
-        mock_app.repo.pull.assert_called_once_with()
+        mock_autoup.assert_called_once_with(mock_app)
         mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
         assert result.exit_code == 0
 
@@ -357,4 +358,10 @@ def test_warnask_yes(mock_confirm):
     main.warnask(mock_app)
     mock_confirm.assert_called_once_with(
         colors.teal('Attempt to upgrade before continuing?'))
+    mock_app.repo.pull.assert_called_once_with()
+
+
+def test_warnupgrade():
+    mock_app = mock.MagicMock()
+    main.warnupgrade(mock_app)
     mock_app.repo.pull.assert_called_once_with()
