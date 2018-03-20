@@ -123,6 +123,17 @@ def dip_config(edit, keys):
                 click.echo(working)
 
 
+@dip.command('diff')
+@options.NAME
+@options.QUIET
+def dip_diff(name, quiet):
+    """ Run diff against remote. """
+    with settings.diffapp(name, quiet=quiet) as app_diff:
+        _, diff = app_diff
+        if diff:
+            raise SystemExit(1)
+
+
 @dip.command('install')
 @options.NAME
 @options.HOME

@@ -87,6 +87,17 @@ def test_config_err(mock_load):
         assert result.exit_code != 0
 
 
+@mock.patch('dip.settings.getapp')
+@mock.patch('dip.settings.Dip.diff')
+def test_diff(mock_diff, mock_getapp):
+    mock_app = mock.MagicMock()
+    mock_getapp.return_value.__enter__.return_value = mock_app
+    with invoke(main.dip_diff, ['fizz', '--quiet']) as result:
+        mock_app.diff.assert_called_once_with(True)
+        assert result.exit_code == 1
+        assert result.output == ''
+
+
 @mock.patch('dip.settings.saveonexit')
 @mock.patch('dip.settings.Settings.install')
 def test_install_sleep(mock_ins, mock_load):
