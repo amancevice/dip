@@ -231,19 +231,24 @@ def dip_reset(force):
 
 @dip.command('run')
 @options.NAME
+@options.QUICK
 @options.ARGS
 @clickerr
-def dip_run(name, args):
+def dip_run(name, quick, args):
     """ Run dip CLI. """
-    with settings.diffapp(name) as app_diff:
-        app, diff = app_diff
-        if diff and app.sleep:
-            warnsleep(app)
-        elif diff and app.auto_upgrade:
-            warnupgrade(app)
-        elif diff:
-            warnask(app)
-        app.run(*args)
+    if quick:
+        with settings.getapp(name) as app:
+            app.run(*args)
+    else:
+        with settings.diffapp(name) as app_diff:
+            app, diff = app_diff
+            if diff and app.sleep:
+                warnsleep(app)
+            elif diff and app.auto_upgrade:
+                warnupgrade(app)
+            elif diff:
+                warnask(app)
+            app.run(*args)
 
 
 @dip.command('show')

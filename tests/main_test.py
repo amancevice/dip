@@ -266,6 +266,18 @@ def test_run_autoupgrade(mock_diffapp, mock_autoup):
 
 
 @mock.patch('dip.settings.getapp')
+def test_run_quick(mock_getapp):
+    mock_app = mock.MagicMock()
+    mock_getapp.return_value.__enter__.return_value = mock_app
+    with invoke(main.dip_run, ['fizz', '--quick', '--',
+                               '--opt1', 'val1',
+                               '--flag']) as result:
+        mock_app.diff.assert_not_called()
+        mock_app.run.assert_called_once_with('--opt1', 'val1', '--flag')
+        assert result.exit_code == 0
+
+
+@mock.patch('dip.settings.getapp')
 def test_show(mock_app):
     mock_app.return_value.__enter__.return_value.diff.return_value = False
     mock_app.return_value.__enter__.return_value.definitions = iter(['TEST'])
