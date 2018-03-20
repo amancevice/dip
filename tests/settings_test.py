@@ -161,6 +161,27 @@ def test_repo_diffs(mock_call, mock_compose, mock_repo):
 
 
 @mock.patch('dip.settings.Repo.repo')
+@mock.patch('compose.config.config.get_default_config_files')
+@mock.patch('subprocess.call')
+@mock.patch('dip.settings.devnull')
+def test_repo_diffs_quiet(mock_null, mock_call, mock_compose, mock_repo):
+    with mock.patch('dip.settings.indir'):
+        mock_repo.remote.return_value.name = 'origin'
+        mock_compose.return_value = ['/path/to/docker-compose.yml']
+        mock_call.return_value = 1
+        repo = settings.Repo('.', 'origin', 'master')
+        ret = any(repo.diffs(quiet=True))
+        mock_repo.remote.return_value.fetch.assert_called_once_with()
+        mock_call.assert_called_once_with([
+            'git', 'diff', '--exit-code',
+            'origin/master:path/to/docker-compose.yml',
+            '/path/to/docker-compose.yml'],
+            stdout=mock_null.return_value.__enter__.return_value,
+            stderr=mock_null.return_value.__enter__.return_value)
+        assert ret is True
+
+
+@mock.patch('dip.settings.Repo.repo')
 def test_repo_diffs_err(mock_repo):
     with mock.patch('compose.config.config.get_default_config_files'):
         with mock.patch('subprocess.call'):
@@ -520,3 +541,8 @@ def test_dip_auto_upgrade():
 def test_dip_sleep():
     app = settings.Dip('dipex', '/path/to/docker/compose/dir')
     assert app.sleep is None
+
+
+def test_devnull():
+    with settings.devnull() as null:
+        assert null

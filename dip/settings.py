@@ -159,9 +159,9 @@ class Dip(collections.Mapping):
         """ Get sleep time. """
         return self.git.get('sleep')
 
-    def diff(self):
+    def diff(self, quiet=False):
         """ Diff remote configuration. """
-        return self.repo and any(self.repo.diffs())
+        return self.repo and any(self.repo.diffs(quiet))
 
     def install(self):
         """ Write executable. """
@@ -274,7 +274,7 @@ class Repo(object):
         """ Time to sleep. """
         return self._sleep or 0
 
-    def diffs(self):
+    def diffs(self, quiet=False):
         """ Echo diff output and sleep. """
         # Fetch remote
         # pylint: disable=no-member
@@ -295,7 +295,11 @@ class Repo(object):
             # Yield diff exit code
             cmd = ['git', 'diff', '--exit-code', rem, loc]
             with indir(self.path):
-                yield subprocess.call(cmd)
+                if quiet:
+                    with devnull() as null:
+                        yield subprocess.call(cmd, stderr=null, stdout=null)
+                else:
+                    yield subprocess.call(cmd)
 
     def pull(self):
         """ Pull from remote. """
@@ -307,6 +311,13 @@ class Repo(object):
     def sleep(self):
         """ Sleep. """
         time.sleep(self.sleeptime)
+
+
+@contextlib.contextmanager
+def devnull():
+    """ Helper to yield /dev/null file pointer. """
+    with open(os.devnull, 'w') as null:
+        yield null
 
 
 @contextlib.contextmanager
@@ -348,10 +359,10 @@ def getapp(name, filename=None, skipgit=False):
 
 
 @contextlib.contextmanager
-def diffapp(name, filename=None):
+def diffapp(name, filename=None, quiet=False):
     """ Yield read-only settings. """
     with getapp(name, filename) as app:
-        yield app, app.diff()
+        yield app, app.diff(quiet)
 
 
 def reset(filepath=None):
