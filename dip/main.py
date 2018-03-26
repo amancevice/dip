@@ -99,7 +99,9 @@ def dip_completion():
                             stdout=subprocess.PIPE,
                             shell=True)
     for line in pipe.communicate():
-        return print(line.decode('utf-8'))
+        # pylint: disable=superfluous-parens
+        print(line.decode('utf-8').strip())
+        return
 
 
 @dip.command('config')

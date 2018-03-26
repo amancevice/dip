@@ -40,6 +40,15 @@ def test_version():
             "dip, version {vsn}\n".format(vsn=dip.__version__)
 
 
+@mock.patch('subprocess.Popen.communicate')
+def test_completion(mock_comm):
+    mock_comm.return_value = (b'Hello, world!', None)
+    with invoke(main.dip_completion) as result:
+        mock_comm.assert_called_once_with()
+        assert result.exit_code == 0
+        assert result.output == 'Hello, world!\n'
+
+
 @mock.patch('dip.settings.load')
 @mock.patch('subprocess.call')
 @mock.patch('dip.utils.editor')
