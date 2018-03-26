@@ -92,6 +92,16 @@ def dip():
     pass  # pragma: no cover
 
 
+@dip.command('completion')
+def dip_completion():
+    """ Print bash completion script. """
+    pipe = subprocess.Popen('_DIP_COMPLETE=source dip',
+                            stdout=subprocess.PIPE,
+                            shell=True)
+    for line in pipe.communicate():
+        return print(line.decode('utf-8'))
+
+
 @dip.command('config')
 @options.EDIT
 @options.KEYS
