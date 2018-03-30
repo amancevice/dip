@@ -54,10 +54,10 @@
         },
         "docker": {
             "hashes": [
-                "sha256:753251b142d56f243fba53ba321a37740a6b6583c528437f45df4d28ba3d4d5d",
-                "sha256:add59251aa15a54c49d1514d576718d762ea5e3d79c2616b6dfaa3fad8d4c9fe"
+                "sha256:3fa96215429efb4a5f48d1b5d47586f1a42c3eead348b96ace4d69be6b5bc414",
+                "sha256:e3815a4f55f6ac78cb3fa4afbc17e923d7bfd08a3da0ceecd313a6dfa3fa4a97"
             ],
-            "version": "==3.1.4"
+            "version": "==3.2.0"
         },
         "docker-compose": {
             "hashes": [
@@ -294,10 +294,10 @@
         },
         "pbr": {
             "hashes": [
-                "sha256:05f61c71aaefc02d8e37c0a3eeb9815ff526ea28b3b76324769e6158d7f95be1",
-                "sha256:60c25b7dfd054ef9bb0ae327af949dd4676aa09ac3a9471cdc871d8a9213f9ac"
+                "sha256:8b9a7c3704657cb0831b3ded0a6b61377947c8235b76649bb7de4bfe2e6cfa56",
+                "sha256:cf66675e22ae91a4f20e4b8354f117d3e3d1de651513051d109cc39645fb3672"
             ],
-            "version": "==3.1.1"
+            "version": "==4.0.0"
         },
         "pexpect": {
             "hashes": [

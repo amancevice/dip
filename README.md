@@ -9,17 +9,17 @@ Install CLIs using docker-compose.
 
 ## Installation
 
-Install via `pip`:
-
-```bash
-pip install dip
-```
-
-Or Homebrew:
+Install via Homebrew:
 
 ```bash
 brew tap amancevice/tap
 brew install amancevice/tap/dip
+```
+
+Or use `pip`:
+
+```bash
+pip install dip
 ```
 
 ## Simple Usage

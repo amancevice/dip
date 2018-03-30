@@ -1,17 +1,14 @@
-import textwrap
 from setuptools import setup
 
-
 setup(name='dip',
-      version='2.4.0',
+      version='2.4.1',
       author='amancevice',
       author_email='smallweirdnum@gmail.com',
       packages=['dip'],
       url='http://www.smallweirdnumber.com',
       description='Install CLIs using docker-compose',
-      long_description=textwrap.dedent(
-          '''See GitHub_ for documentation.
-          .. _GitHub: https://github.com/amancevice/dip'''),
+      long_description='See GitHub_ for documentation.'
+                       '.. _GitHub: https://github.com/amancevice/dip',
       classifiers=['Intended Audience :: Developers',
                    'License :: OSI Approved :: MIT License',
                    'Operating System :: OS Independent',
