@@ -223,9 +223,8 @@ class Dip(collections.Mapping):
             raise errors.NoSuchService(self.name)
 
 
-class Repo(object):
+class Repo:
     """ Git repository for dip app. """
-
     def __init__(self, path, remote=None, branch=None, sleep=None):
         self.path = os.path.abspath(path)
         self._remote = remote
