@@ -1,11 +1,13 @@
-version: '3.5'
+version: '3.7'
 services:
-  dipex:
-    image: amancevice/dipex
+  aws:
+    image: awscli
     build: .
     environment:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
-      TEST:
+      AWS_DEFAULT_REGION:
+      AWS_REGION:
+      AWS_PROFILE:
     volumes:
       - ~/.aws:/root/.aws:ro
