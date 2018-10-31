@@ -8,7 +8,7 @@ setup(
     install_requires=[
         'click >= 6.7.0',
         'colored >= 1.3.93',
-        'docker-compose >= 1.18.0',
+        'docker-compose >= 1.23.0',
         'gitpython >= 2.1.3'],
     name='dip',
     packages=['dip'],
