@@ -7,8 +7,9 @@ import pytest
 from dip import utils
 
 
+@mock.patch('dip.utils.pkgpath')
 @mock.patch('os.path.exists')
-def test_dip_home(mock_exists):
+def test_dip_home(mock_exists, mock_pkg):
     mock_exists.return_value = False
     assert utils.dip_home('DIP_HOME') == utils.pkgpath()
 
@@ -38,3 +39,8 @@ def test_notty():
             sys.stdin = stdin
             sys.stdout = stdout
             assert utils.notty() is False
+
+
+@mock.patch('pkg_resources.resource_filename')
+def test_pkgpath(mock_filename):
+    assert utils.pkgpath() == mock_filename.return_value
