@@ -1,7 +1,6 @@
 """
 dip contexts.
 """
-import collections
 import contextlib
 import json
 import os
@@ -9,6 +8,10 @@ import re
 import subprocess
 import sys
 import time
+try:
+    from collections import abc as collections
+except ImportError:  # pragma: no cover
+    import collections
 
 import compose.cli.command
 import compose.config

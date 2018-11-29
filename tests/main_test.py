@@ -4,8 +4,11 @@ import json
 import click.testing
 import docker
 import git
-import mock
 import pytest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 import dip
 from dip import colors

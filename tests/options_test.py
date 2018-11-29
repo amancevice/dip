@@ -1,7 +1,10 @@
 import os
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 import click
-import mock
 import pytest
 from dip import options
 

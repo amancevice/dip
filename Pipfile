@@ -12,8 +12,6 @@ gitpython = ">= 2.1.3"
 [dev-packages]
 ipython = "*"
 ipdb = "*"
+pylint = "*"
 pytest = "*"
 pytest-cov = "*"
-mock = "*"
-
-[requires]

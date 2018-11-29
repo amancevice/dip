@@ -89,7 +89,6 @@ def dip():
 
         See https://github.com/amancevice/dip for more information.
     """
-    pass  # pragma: no cover
 
 
 @dip.command('completion')

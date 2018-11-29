@@ -2,10 +2,13 @@ import json
 import os
 import sys
 import tempfile
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 import compose.project
 import git
-import mock
 import pytest
 from dip import errors
 from dip import settings

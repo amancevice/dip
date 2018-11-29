@@ -5,7 +5,6 @@ dip exceptions
 
 class DipError(Exception):
     """ Generic dip error. """
-    pass
 
 
 class SettingsError(DipError):
