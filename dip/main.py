@@ -313,3 +313,7 @@ def dip_upgrade(names):
                 app.repo.pull()
             except AttributeError:
                 pass
+
+
+if __name__ == '__main__':
+    dip()  # pragma: no cover
