@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-click = ">= 6.7.0"
-colored = ">= 1.3.93"
-docker-compose = ">= 1.23.0"
-gitpython = ">= 2.1.3"
+click = "*"
+colored = "*"
+docker-compose = "*"
+gitpython = "*"
+python-dotenv = {extras = ["cli"],version = "*"}
 
 [dev-packages]
 ipython = "*"

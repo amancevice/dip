@@ -150,14 +150,15 @@ def dip_diff(name, quiet):
 @options.HOME
 @options.PATH
 @options.REMOTE
+@options.DOTENV
 @options.ENV
 @options.SECRET
 @options.SLEEP
 @options.AUTO_UPGRADE
 @options.NO_EXE
 @clickerr
-def dip_install(name, home, path, remote, env, secret, sleep, auto_upgrade,
-                no_exe):
+def dip_install(name, home, path, remote, dotenv, env, secret, sleep,
+                auto_upgrade, no_exe):
     """ Install CLI by name.
 
         \b
@@ -180,9 +181,9 @@ def dip_install(name, home, path, remote, env, secret, sleep, auto_upgrade,
 
         # Install
         if no_exe:
-            app = cfg[name] = settings.Dip(name, home, path, env, git)
+            app = cfg[name] = settings.Dip(name, home, path, env, git, dotenv)
         else:
-            app = cfg.install(name, home, path, env, git)
+            app = cfg.install(name, home, path, env, git, dotenv)
 
         # Validate configuration
         app.validate()

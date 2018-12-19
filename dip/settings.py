@@ -1,3 +1,4 @@
+# -*- coding=utf-8 -*-
 """
 dip contexts.
 """
@@ -52,10 +53,10 @@ class Settings(collections.MutableMapping):
     def __len__(self):
         return len(self.data)
 
-    def install(self, name, home, path=None, env=None, git=None):
+    def install(self, name, home, path=None, env=None, git=None, dotenv=None):
         """ Install applicaton. """
         # pylint: disable=too-many-arguments
-        app = Dip(name, home, path, env, git)
+        app = Dip(name, home, path, env, git, dotenv)
         try:
             app.install()
         finally:
@@ -92,13 +93,14 @@ class Settings(collections.MutableMapping):
 class Dip(collections.Mapping):
     """ Dip app. """
     # pylint: disable=super-init-not-called
-    def __init__(self, name, home, path=None, env=None, git=None):
+    def __init__(self, name, home, path=None, env=None, git=None, dotenv=None):
         # pylint: disable=too-many-arguments
         self.name = str(name)
         self.home = str(home)
         self.path = path or PATH
         self.env = {k: v for k, v in (env or {}).items() if v}
         self.git = {k: v for k, v in (git or {}).items() if v}
+        self.dotenv = dotenv
 
     def __str__(self):
         return self.name
@@ -121,6 +123,8 @@ class Dip(collections.Mapping):
             yield 'env'
         if self.git:
             yield 'git'
+        if self.dotenv:
+            yield 'dotenv'
 
     def __len__(self):
         return 3 + bool(self.env) + bool(self.git)
@@ -187,6 +191,11 @@ class Dip(collections.Mapping):
 
         # Call docker-compose run --rm <args> <svc> $*
         with indir(self.home):
+
+            # Source .env file
+            if self.dotenv:
+                cmd = ['dotenv', '-f', self.dotenv, 'run'] + cmd
+
             return subprocess.call(cmd + [self.name] + list(args),
                                    stdout=sys.stdout,
                                    stderr=sys.stderr,

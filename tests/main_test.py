@@ -125,7 +125,7 @@ def test_install_sleep(mock_ins, mock_load):
             {'remote': 'origin',
              'branch': 'master',
              'sleep': 5,
-             'auto_upgrade': False})
+             'auto_upgrade': False}, None)
 
 
 @mock.patch('dip.settings.saveonexit')
@@ -143,7 +143,7 @@ def test_install_autoup(mock_ins, mock_load):
             {'remote': 'origin',
              'branch': 'master',
              'sleep': None,
-             'auto_upgrade': True})
+             'auto_upgrade': True}, None)
 
 
 @mock.patch('dip.settings.saveonexit')

@@ -272,12 +272,13 @@ def test_dip_len():
 def test_dip_iter():
     with mock.patch('git.Repo'):
         ret = settings.Dip('dipex', '/path/to/docker/compose/dir', '/bin',
-                           {'ENV': 'VAL'}, {'remote': 'origin'})
+                           {'ENV': 'VAL'}, {'remote': 'origin'}, '.env')
         assert dict(ret) == {'name': 'dipex',
                              'home': '/path/to/docker/compose/dir',
                              'path': '/bin',
                              'env': {'ENV': 'VAL'},
-                             'git': {'remote': 'origin'}}
+                             'git': {'remote': 'origin'},
+                             'dotenv': '.env'}
 
 
 @mock.patch('dip.settings.Repo')
@@ -354,6 +355,23 @@ def test_dip_run(mock_call, mock_dir, mock_tty):
         stdout=sys.stdout,
         stderr=sys.stderr)
 
+
+@mock.patch('dip.utils.notty')
+@mock.patch('dip.settings.indir')
+@mock.patch('subprocess.call')
+def test_dip_run_dotenv(mock_call, mock_dir, mock_tty):
+    mock_tty.return_value = True
+    app = settings.Dip('dipex', '/path/to/docker/compose/dir', dotenv='.env')
+    app.run('--help')
+    mock_dir.assert_called_once_with('/path/to/docker/compose/dir')
+    mock_call.assert_called_once_with(
+        [
+            'dotenv', '-f', '.env', 'run',
+            'docker-compose', 'run', '--rm', '-T', 'dipex', '--help',
+        ],
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr)
 
 @mock.patch('dip.utils.notty')
 @mock.patch('dip.settings.indir')
