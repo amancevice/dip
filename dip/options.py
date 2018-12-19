@@ -66,24 +66,9 @@ def split_remote(ctx, param, value):
     return value, value
 
 
-class Env(click.types.StringParamType):
+class NameVal(click.types.StringParamType):
     """ Override of the StringParamType. """
-    name = 'ENV'
-
-
-class EnvVal(click.types.StringParamType):
-    """ Override of the StringParamType. """
-    name = 'ENV=VALUE'
-
-
-class Key(click.types.StringParamType):
-    """ Override of the StringParamType. """
-    name = 'KEY'
-
-
-class Path(click.types.StringParamType):
-    """ Override of the StringParamType. """
-    name = 'PATH'
+    name = 'NAME=VALUE'
 
 
 class Name(click.types.StringParamType):
@@ -105,15 +90,15 @@ EDIT = click.option('-e', '--edit',
                     is_flag=True)
 ENV = click.option('-e', '--env',
                    callback=validate_env,
-                   help='Optional ENV variable',
+                   help='Runtime ENV variable',
                    multiple=True,
-                   type=EnvVal())
+                   type=NameVal())
 FORCE = click.option('-f', '--force',
                      help='Do not prompt',
                      is_flag=True,
                      prompt='Are you sure?')
 NO_EXE = click.option('-o', '--no-exe',
-                      help='Install settings only, no executable',
+                      help='Install without executable',
                       is_flag=True)
 QUICK = click.option('-q', '--quick',
                      help='Do not check remote before running',
@@ -125,17 +110,15 @@ SECRET = click.option('-x', '--secret',
                       callback=validate_secret,
                       help='Set secret ENV',
                       multiple=True,
-                      type=Env())
+                      type=Name())
 SLEEP = click.option('-s', '--sleep',
                      callback=ensure_remote,
-                     help='Number of seconds to sleep',
+                     help='Number of seconds to sleep when remote differs',
                      type=click.INT)
 PATH = click.option('-p', '--path',
                     callback=expand_home,
-                    help='Path to write executable',
-                    type=Path())
+                    help='Path to write executable')
 REMOTE = click.option('-r', '--remote',
                       callback=split_remote,
                       help='Optional git remote/branch',
-                      is_eager=True,
-                      type=Name())
+                      is_eager=True)
