@@ -359,19 +359,19 @@ def test_dip_run(mock_call, mock_dir, mock_tty):
 @mock.patch('dip.utils.notty')
 @mock.patch('dip.settings.indir')
 @mock.patch('subprocess.call')
-def test_dip_run_dotenv(mock_call, mock_dir, mock_tty):
+@mock.patch('dotenv.load_dotenv')
+def test_dip_run_dotenv(mock_dotenv, mock_call, mock_dir, mock_tty):
     mock_tty.return_value = True
     app = settings.Dip('dipex', '/path/to/docker/compose/dir', dotenv='.env')
     app.run('--help')
     mock_dir.assert_called_once_with('/path/to/docker/compose/dir')
+    mock_dotenv.assert_called_once_with('.env')
     mock_call.assert_called_once_with(
-        [
-            'dotenv', '-f', '.env', 'run',
-            'docker-compose', 'run', '--rm', '-T', 'dipex', '--help',
-        ],
+        ['docker-compose', 'run', '--rm', '-T', 'dipex', '--help'],
         stdin=sys.stdin,
         stdout=sys.stdout,
         stderr=sys.stderr)
+
 
 @mock.patch('dip.utils.notty')
 @mock.patch('dip.settings.indir')

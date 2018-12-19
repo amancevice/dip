@@ -8,7 +8,7 @@ click = "*"
 colored = "*"
 docker-compose = "*"
 gitpython = "*"
-python-dotenv = {extras = ["cli"],version = "*"}
+python-dotenv = "*"
 
 [dev-packages]
 ipython = "*"
