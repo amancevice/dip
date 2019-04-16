@@ -16,7 +16,7 @@ except ImportError:  # pragma: no cover
 
 import compose.cli.command
 import compose.config
-import dotenv
+import dotenv as dot_env
 import git as pygit
 from dip import errors
 from dip import utils
@@ -195,7 +195,7 @@ class Dip(collections.Mapping):
 
             # Source .env file
             if self.dotenv:
-                dotenv.load_dotenv(self.dotenv)
+                dot_env.load_dotenv(self.dotenv)
 
             return subprocess.call(cmd + [self.name] + list(args),
                                    stdout=sys.stdout,
