@@ -1,4 +1,5 @@
 import os
+import pkg_resources
 import sys
 import tempfile
 from unittest import mock
@@ -44,3 +45,9 @@ def test_notty():
 @mock.patch('pkg_resources.resource_filename')
 def test_pkgpath(mock_filename):
     assert utils.pkgpath() == mock_filename.return_value
+
+
+@mock.patch('pkg_resources.resource_filename')
+def test_pkgpath_err(mock_filename):
+    mock_filename.side_effect = pkg_resources.DistributionNotFound
+    assert utils.pkgpath() == os.path.join(os.path.abspath('.'), 'dip')

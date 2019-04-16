@@ -22,7 +22,7 @@ from dip import errors
 from dip import utils
 
 HOME = utils.dip_home('DIP_HOME')
-PATH = os.getenv('DIP_PATH', '/usr/local/bin')
+PATH = os.getenv('DIP_PATH') or '/usr/local/bin'
 
 
 class Settings(collections.MutableMapping):

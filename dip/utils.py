@@ -50,4 +50,7 @@ def piped_redirected(stream):
 def pkgpath():
     """ Helper to return abspath of dip file. """
     root = pkg_resources.Requirement.parse(__package__)
-    return pkg_resources.resource_filename(root, __package__)
+    try:
+        return pkg_resources.resource_filename(root, __package__)
+    except pkg_resources.DistributionNotFound:
+        return os.path.join(os.path.abspath('.'), __package__)
