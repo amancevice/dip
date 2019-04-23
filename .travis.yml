@@ -17,6 +17,6 @@ deploy:
     secure: SKdWAdwCl/IoEM4oadLULiCW9GauVIxLS6KIHjcoxl+rUk0TjTELltVrkfe49qzKV9R3vHmLmrE8CnfhUiuJiIObIou4nuMw6P4NB8h7ik+Cj58WHpBI8EBzOcykSyyfzxmY/HV1B1zxAannTdvPR7pc20DGHgMuI7ih0qeAPzD4wAZealT2WPYH26ITJpJqnGuUoDPQ6xsYvJqM/oFK0zEqc9nH9R/KD+Yj03+pvCyoPHYmhmrMqJnUo2hjSlcVyJ/Ws5u11+wuNrFv8aeE9EIUZf8bqOOUzeMC9k/REZPjS2PfvddZxqkPh2FNmifM5jMTRPrbTSqoLXNAd9c4425FHqnB/N5JugCHVYUEtCid4LHZ/8v1/vrXPd+ZXbNNVIuU3Dtut3uYu1rqympwLsz7+JNHBCgj+eBpm/oquYN1GOrPhN2693bcowh/nnB/a0XGY6QqpbFGq7azpdw8fypVrxXb2eqSW84byBJXbviffSQmQwAdGivYyMo7VTA2YpU0hAhlg+JN5l007L9rf4M/0k+Z6UDjgoolFI2aZejhwio4qjQbnDLyJHgkcF/a2yHScASTAaV0TLusu5ToBj4HqLAroJg+YXXltXvbSYf3hkOld/vLUPikwSfHgWCs+hXz9Xa25bI7BYqEjhcPmjQYuF1megGqj2zg7s3og0g=
   on:
     distributions: sdist bdist_wheel
-    python: '3.6'
+    python: 3.7-dev
     repo: amancevice/dip
     tags: true
