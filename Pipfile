@@ -3,16 +3,16 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-[packages]
-click = "*"
-colored = "*"
-docker-compose = "*"
-gitpython = "*"
-python-dotenv = "*"
-
 [dev-packages]
 ipython = "*"
 ipdb = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
+
+[packages]
+click = "*"
+colored = "*"
+docker-compose = "*"
+gitpython = "*"
+python-dotenv = "*"
