@@ -11,8 +11,7 @@ import dip
 from dip import colors
 from dip import errors
 from dip import main
-from dip import settings
-from . import MockSettings
+from tests import MockSettings
 
 
 @contextlib.contextmanager
@@ -55,7 +54,7 @@ def test_completion(mock_comm):
 def test_config_edit(mock_ed, mock_call, mock_load):
     mock_ed.return_value = '/bin/vim'
     mock_load.return_value.__enter__.return_value = MockSettings()
-    with invoke(main.dip_config, ['--edit']) as result:
+    with invoke(main.dip_config, ['--edit']):
         mock_call.assert_called_once_with(
             ['/bin/vim', '/path/to/settings.json'])
 
@@ -66,7 +65,7 @@ def test_config_edit(mock_ed, mock_call, mock_load):
 def test_config_edit_err(mock_ed, mock_call, mock_load):
     mock_ed.side_effect = KeyError
     mock_load.return_value.__enter__.return_value = MockSettings()
-    with invoke(main.dip_config, ['--edit']) as result:
+    with invoke(main.dip_config, ['--edit']):
         mock_call.assert_not_called()
 
 

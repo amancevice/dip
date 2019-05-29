@@ -1,7 +1,6 @@
 from setuptools import setup
 from setuptools import find_packages
 
-
 setup(
     author='amancevice',
     author_email='smallweirdnum@gmail.com',
@@ -17,11 +16,6 @@ setup(
     name='dip',
     packages=find_packages(exclude=['tests']),
     setup_requires=['setuptools_scm'],
-    tests_require=[
-        'pylint',
-        'pytest',
-        'pytest-cov',
-    ],
     url='https://github.com/amancevice/dip',
     use_scm_version=True,
 )

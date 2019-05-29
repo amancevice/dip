@@ -6,6 +6,8 @@ import subprocess
 
 import click
 import docker
+import git as pygit
+
 from dip import __version__
 from dip import colors
 from dip import errors
@@ -16,7 +18,6 @@ from dip import utils
 
 def clickerr(func):
     """ Decorator to catch errors and re-raise as ClickException. """
-    # pylint: disable=missing-docstring
     def wrapper(*args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -98,7 +99,6 @@ def dip_completion():
                             stdout=subprocess.PIPE,
                             shell=True)
     for line in pipe.communicate():
-        # pylint: disable=superfluous-parens
         print(line.decode('utf-8').strip())
         return
 
@@ -166,7 +166,6 @@ def dip_install(name, home, path, remote, dotenv, env, secret, sleep,
         dip install fizz /path/to/dir        # Absolute path
         dip install fizz . -r origin/master  # Tracking git remote/branch
     """
-    # pylint: disable=too-many-arguments
     with settings.saveonexit() as cfg:
         # Interactively set ENV
         for sec in secret:
@@ -215,7 +214,7 @@ def dip_list():
                         remote = app.repo.remotename
                         branch = app.repo.branch
                         tpl += " {remote}/{branch}"
-                    except Exception:  # pylint:  disable=broad-except
+                    except pygit.exc.GitError:
                         tpl += colors.red(' [git error]')
                 click.echo(tpl.format(name=name,
                                       home=home,

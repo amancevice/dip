@@ -9,7 +9,7 @@ import git
 import pytest
 from dip import errors
 from dip import settings
-from . import MockSettings
+from tests import MockSettings
 
 settings.HOME = os.path.expanduser('~/.dip')
 
@@ -122,9 +122,9 @@ def test_repo_branch():
     assert ret == 'branch'
 
 
-@mock.patch('git.Repo.active_branch')
-def test_repo_branch_active(mock_branch):
-    mock_branch.name = 'branch'
+@mock.patch('dip.settings.Repo.repo')
+def test_repo_branch_active(mock_repo):
+    mock_repo.active_branch.name = 'branch'
     repo = settings.Repo('.', 'origin')
     ret = repo.branch
     assert ret == 'branch'

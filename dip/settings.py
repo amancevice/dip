@@ -27,7 +27,6 @@ PATH = os.getenv('DIP_PATH') or '/usr/local/bin'
 
 class Settings(collections.MutableMapping):
     """ Dip app Settings. """
-    # pylint: disable=super-init-not-called
     def __init__(self, *args, **kwargs):
         self.data = dict(*args, **kwargs)
         self.filepath = os.path.join(HOME, 'settings.json')
@@ -56,7 +55,6 @@ class Settings(collections.MutableMapping):
 
     def install(self, name, home, path=None, env=None, git=None, dotenv=None):
         """ Install applicaton. """
-        # pylint: disable=too-many-arguments
         app = Dip(name, home, path, env, git, dotenv)
         try:
             app.install()
@@ -93,9 +91,7 @@ class Settings(collections.MutableMapping):
 
 class Dip(collections.Mapping):
     """ Dip app. """
-    # pylint: disable=super-init-not-called
     def __init__(self, name, home, path=None, env=None, git=None, dotenv=None):
-        # pylint: disable=too-many-arguments
         self.name = str(name)
         self.home = str(home)
         self.path = path or PATH
@@ -216,10 +212,9 @@ class Dip(collections.Mapping):
     def validate(self, skipgit=False):
         """ Validate git repo and compose project. """
         if not skipgit and self.repo:
-            # pylint: disable=no-member
             try:
-                assert self.repo.repo
-                assert self.repo.remote
+                self.repo.repo
+                self.repo.remote
             except pygit.exc.NoSuchPathError:
                 raise errors.NoSuchPathError(self.home)
             except pygit.exc.InvalidGitRepositoryError:
@@ -228,8 +223,8 @@ class Dip(collections.Mapping):
                 raise errors.NoSuchRemoteError(self.repo.remotename)
 
         try:
-            assert self.project
-            assert self.service
+            self.project
+            self.service
         except compose.config.errors.ComposeFileNotFound:
             raise errors.ComposeFileNotFound(self.home)
         except compose.project.NoSuchService:
@@ -289,7 +284,6 @@ class Repo:
     def diffs(self, quiet=False):
         """ Echo diff output and sleep. """
         # Fetch remote
-        # pylint: disable=no-member
         try:
             self.remote.fetch()
         except pygit.exc.GitCommandError:

@@ -1,0 +1,8 @@
+*
+!.git
+!dip
+!tests
+!Pipfile*
+!README*
+!pytest.ini
+!setup.py

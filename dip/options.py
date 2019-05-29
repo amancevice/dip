@@ -9,7 +9,6 @@ import click
 
 def validate_env(ctx, param, value):
     """ Validate --env option. """
-    # pylint: disable=unused-argument
     environment = {}
     for val in value:
 
@@ -31,7 +30,6 @@ def validate_env(ctx, param, value):
 
 def validate_secret(ctx, param, value):
     """ Validate --secret option. """
-    # pylint: disable=unused-argument
     for val in value:
         if not re.match(r'^[A-Z_]+$', val):
             raise click.BadParameter("Use 'CAPITALS_AND_UNDERSCORES'")
@@ -40,7 +38,6 @@ def validate_secret(ctx, param, value):
 
 def ensure_remote(ctx, param, value):
     """ Ensure --remote is used. """
-    # pylint: disable=unused-argument
     if value and ctx.params.get('remote') == (None, None):
         raise click.BadParameter('Invalid without "-r" / "--remote" option')
     return value
@@ -48,7 +45,6 @@ def ensure_remote(ctx, param, value):
 
 def expand_home(ctx, param, value):
     """ Expand home argument to absolute path. """
-    # pylint: disable=unused-argument
     if value is not None:
         return os.path.abspath(os.path.expanduser(value))
     return value
@@ -56,7 +52,6 @@ def expand_home(ctx, param, value):
 
 def split_remote(ctx, param, value):
     """ Split remote/branch into tuple. """
-    # pylint: disable=unused-argument
     if value:
         try:
             remote, branch = value.split('/')
