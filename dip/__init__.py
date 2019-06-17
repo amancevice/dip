@@ -3,7 +3,7 @@ dip CLI tool.
 """
 import pkg_resources
 
-from dip.settings import Dip
+from dip.settings import Dip  # noqa: F401
 
 try:
     __version__ = pkg_resources.get_distribution(__package__).version
