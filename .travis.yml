@@ -28,7 +28,5 @@ deploy:
       AaV0TLusu5ToBj4HqLAroJg+YXXltXvbSYf3hkOld/vLUPikwSfHgWCs+hXz9Xa25bI7BYqEj
       hcPmjQYuF1megGqj2zg7s3og0g=
   on:
-    distributions: sdist bdist_wheel
-    python: 3.7-dev
     repo: amancevice/dip
     tags: true
