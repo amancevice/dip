@@ -92,3 +92,5 @@ ENV/
 
 # py.test
 .pytest_cache/
+
+Pipfile.lock
