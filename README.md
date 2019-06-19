@@ -1,6 +1,6 @@
 # dip
 
-[![build](https://travis-ci.org/amancevice/dip.svg?branch=master)](https://travis-ci.org/amancevice/dip)
+[![build](https://travis-ci.com/amancevice/dip.svg?branch=master)](https://travis-ci.com/amancevice/dip)
 [![codecov](https://codecov.io/gh/amancevice/dip/branch/master/graph/badge.svg)](https://codecov.io/gh/amancevice/dip)
 [![pypi](https://badge.fury.io/py/dip.svg)](https://badge.fury.io/py/dip)
 
