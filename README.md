@@ -1,9 +1,10 @@
 # dip
 
-[![pytest](https://github.com/amancevice/dip/workflows/pytest/badge.svg)](https://github.com/amancevice/dip/actions)
-[![PyPI Version](https://badge.fury.io/py/dip.svg)](https://badge.fury.io/py/dip)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/380821ee8b5669579aa3/test_coverage)](https://codeclimate.com/github/amancevice/dip/test_coverage)
-<!--[![Maintainability](https://api.codeclimate.com/v1/badges/380821ee8b5669579aa3/maintainability)](https://codeclimate.com/github/amancevice/dip/maintainability)-->
+![pypi](https://img.shields.io/pypi/v/dip?color=yellow&logo=python&logoColor=eee&style=flat-square)
+![python](https://img.shields.io/pypi/pyversions/dip?logo=python&logoColor=eee&style=flat-square)
+[![pytest](https://img.shields.io/github/workflow/status/amancevice/dip/pytest?logo=github&style=flat-square)](https://github.com/amancevice/dip/actions)
+[![coverage](https://img.shields.io/codeclimate/coverage/amancevice/dip?logo=code-climate&style=flat-square)](https://codeclimate.com/github/amancevice/dip/test_coverage)
+[![maintainability](https://img.shields.io/codeclimate/maintainability/amancevice/dip?logo=code-climate&style=flat-square)](https://codeclimate.com/github/amancevice/dip/maintainability)
 
 Install CLIs using docker-compose.
 
