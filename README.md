@@ -1,6 +1,6 @@
 # dip
 
-[![Build Status](https://travis-ci.com/amancevice/dip.svg?branch=master)](https://travis-ci.com/amancevice/dip)
+[![pytest](https://github.com/amancevice/dip/workflows/pytest/badge.svg)](https://github.com/amancevice/dip/actions)
 [![PyPI Version](https://badge.fury.io/py/dip.svg)](https://badge.fury.io/py/dip)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/380821ee8b5669579aa3/test_coverage)](https://codeclimate.com/github/amancevice/dip/test_coverage)
 <!--[![Maintainability](https://api.codeclimate.com/v1/badges/380821ee8b5669579aa3/maintainability)](https://codeclimate.com/github/amancevice/dip/maintainability)-->
