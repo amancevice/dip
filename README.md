@@ -42,14 +42,14 @@ dip install dipex .
 ## Tracking a git remote
 
 1. Follow steps 1-3 above
-2. Commit these files to a branch on a git remote (eg. `origin/master`)
+2. Commit these files to a branch on a git remote (eg. `origin/main`)
 3. Run `dip install <service> . --remote <remote>/<branch>` to install the service as an executable command that will track changes to `docker-compose.yml` on the supplied remote/branch
 4. Run `dip uninstall <service>` to remove the executable from the file system
 
 ```bash
 git clone git@github.com:owner/repo-with-docker-compose.git
 cd repo-with-docker-compose
-dip install dipex . --remote origin/master
+dip install dipex . --remote origin/main
 ```
 
 If a CLI is installed with the `--remote` flag, any differences between the local and remote `docker-compose.yml` files will trigger a prompt asking if the user wishes to upgrade (git pull).
@@ -59,7 +59,7 @@ If the user declines to upgrade he/she must resolve the conflict before continui
 Alternatively, use the `--sleep` option to show the user the diff, then sleep for the provided time (in seconds) instead of waiting on user input.
 
 ```bash
-dip install dipex . --remote origin/master --sleep 10
+dip install dipex . --remote origin/main --sleep 10
 ```
 
 ## Upgrading from a git remote
@@ -76,11 +76,11 @@ Ex.
 
 ```bash
 dip install mycli /path/to/project \
-  --remote origin/master \
+  --remote origin/main \
   --env FIZZ=BUZZ
 ```
 
-Will generate an executable with the name `mycli`, monitor the `origin/master` remote/branch for changes and set the `ENV` variable `FIZZ` to the value `BUZZ` each time the `mycli` is executed.
+Will generate an executable with the name `mycli`, monitor the `origin/main` remote/branch for changes and set the `ENV` variable `FIZZ` to the value `BUZZ` each time the `mycli` is executed.
 
 ### Why Docker?
 
@@ -145,13 +145,13 @@ dip install dipex .
 Or, if you would like to install tracking a remote:
 
 ```bash
-dip install dipex . --remote origin/master
+dip install dipex . --remote origin/main
 ```
 
 If you are not currently inside the directory where your `docker-compose.yml` file is, supply it as a positional argument:
 
 ```bash
-dip install dipex /path/to/project [--remote origin/master]
+dip install dipex /path/to/project [--remote origin/main]
 ```
 
 ### Using the CLI
@@ -176,7 +176,7 @@ The default configuration can be viewed using the `dip config` command:
 {
     "dipex": {
         "git": {
-            "branch": "master",
+            "branch": "main",
             "remote": "origin"
         },
         "home": "/path/to/project",
