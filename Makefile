@@ -1,20 +1,19 @@
-SDIST := dist/$(shell python setup.py --fullname).tar.gz
+PYFILES := $(shell find dip tests -name '*.py')
+SDIST   := dist/$(shell python setup.py --fullname).tar.gz
 
-.PHONY: default clean test upload
-
-default: $(SDIST)
+all: $(SDIST)
 
 clean:
 	rm -rf dist
 
-test: coverage.xml
-
 upload: $(SDIST)
 	twine upload $<
 
-$(SDIST): coverage.xml
+.PHONY: all clean upload
+
+$(SDIST): $(PYFILES) Pipfile.lock
+	pipenv run pytest
 	python setup.py sdist
 
-coverage.xml: $(shell find dip tests -name '*.py')
-	flake8 $^
-	pytest
+Pipfile.lock: Pipfile
+	pipenv install --dev
